@@ -1,12 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Panel\ProductController;
 use App\Http\Controllers\Panel\ProductCategoryController;
 use App\Http\Controllers\Panel\TemplateEditorController;
 use App\Http\Controllers\Panel\PreviewExportController;
+use App\Http\Controllers\Panel\IndexController;
 /*
 |--------------------------------------------------------------------------
 | Admin Panel Routes
@@ -19,9 +18,7 @@ use App\Http\Controllers\Panel\PreviewExportController;
 */
 
 
-Route::get('/', function () {
-    return view('panel.index');
-})->name('dashboard');
+Route::get('/', [IndexController::class, 'index'])->name('dashboard');
 
 // Product Routes
 Route::get('/products', [ProductController::class, 'index'])->name('products');
@@ -31,7 +28,13 @@ Route::put('/products/{product}', [ProductController::class, 'update'])->name('p
 Route::get('/template-editor/{product}', [TemplateEditorController::class, 'index'])->name('template-editor');
 Route::put('/template-editor/{product}', [TemplateEditorController::class, 'update'])->name('template-editor.update');
 Route::get('/preview-export/{product}', [PreviewExportController::class, 'show'])->name('preview-export');
-Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+Route::post('/products/{product}/status', [ProductController::class, 'updateStatus'])->name('products.status.update');
+Route::get('/products/export', [ProductController::class, 'export'])->name('products.export');
+Route::get('/products/{product}', [ProductController::class, 'destroy'])->name('products.delete');
+Route::post('/products/bulk-delete', [ProductController::class, 'bulkDelete'])->name('products.bulk-delete');
+
+Route::get('/preview-export/{product}/pdf', [PreviewExportController::class, 'downloadPDF'])->name('preview-export.pdf');
 
 // Category Routes
 Route::get('/categories', [ProductCategoryController::class, 'index'])->name('categories');

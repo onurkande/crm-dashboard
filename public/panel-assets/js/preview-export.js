@@ -49,13 +49,9 @@ function setupEventListeners() {
     document.getElementById('compareToggle').addEventListener('click', toggleImageComparison);
     document.getElementById('zoomImageBtn').addEventListener('click', zoomProductImage);
     document.getElementById('editLabelBtn').addEventListener('click', editLabel);
-    document.getElementById('previewFullLabel').addEventListener('click', previewFullLabel);
-    document.getElementById('fullScreenBtn').addEventListener('click', toggleFullScreen);
 
     // Final action buttons
     document.getElementById('archiveBtn').addEventListener('click', archiveLabel);
-    document.getElementById('shareBtn').addEventListener('click', shareLabel);
-    document.getElementById('emailBtn').addEventListener('click', emailLabel);
     document.getElementById('reEditBtn').addEventListener('click', reEditLabel);
     document.getElementById('finalizeBtn').addEventListener('click', finalizeLabel);
 
@@ -158,28 +154,32 @@ function editLabel() {
     }
 }
 
+document.getElementById('previewFullLabel').addEventListener('click', previewFullLabel);
+
 function previewFullLabel() {
-    const labelContent = document.getElementById('labelContent').innerHTML;
+    // iframe içeriğini al
+    const iframe = document.getElementById('designFrame');
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const labelContent = iframeDoc.body.innerHTML;
     
     const modal = document.createElement('div');
     modal.className = 'modal fade';
     modal.innerHTML = `
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Full Label Preview</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="d-flex justify-content-center">
-                        <div class="label-content" style="transform: scale(2); margin: 100px;">
+                <div class="modal-body p-0">
                             ${labelContent}
-                        </div>
-                    </div>
+                        
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Download Preview</button>
+                    <button type="button" class="btn btn-primary" onclick="downloadFullPreview()">
+                        <i class="bi bi-download me-1"></i> Download Preview
+                    </button>
                 </div>
             </div>
         </div>
@@ -193,6 +193,65 @@ function previewFullLabel() {
         modal.remove();
     });
 }
+
+function downloadFullPreview() {
+    const iframe = document.getElementById('designFrame');
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const designElement = iframeDoc.body;
+    
+    // Loading durumunu göster
+    const downloadBtn = document.querySelector('.modal-footer .btn-primary');
+    const originalContent = downloadBtn.innerHTML;
+    downloadBtn.disabled = true;
+    downloadBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Processing...';
+    
+    // Orijinal arka plan rengini kaydet
+    const originalBg = designElement.style.backgroundColor;
+    
+    // Geçici olarak beyaz arka plan ekle
+    designElement.style.backgroundColor = '#ffffff';
+    
+    html2canvas(designElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        allowTaint: true,
+        foreignObjectRendering: true
+    }).then(canvas => {
+        // Canvas'ı PNG'ye çevir
+        const image = canvas.toDataURL('image/png', 1.0);
+        
+        // İndirme linki oluştur
+        const link = document.createElement('a');
+        link.download = 'label-preview-' + new Date().getTime() + '.png';
+        link.href = image;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Orijinal arka plan rengini geri yükle
+        designElement.style.backgroundColor = originalBg;
+        
+        // Butonu eski haline getir
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = originalContent;
+        
+        // Başarı mesajı göster
+        showToast('Preview downloaded successfully!', 'success');
+    }).catch(error => {
+        console.error('Preview download error:', error);
+        alert('Preview indirilirken bir hata oluştu.');
+        
+        // Hata durumunda orijinal arka plan rengini geri yükle
+        designElement.style.backgroundColor = originalBg;
+        
+        // Butonu eski haline getir
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = originalContent;
+    });
+}
+
 document.getElementById('fullScreenBtn').addEventListener('click', toggleFullScreen);
 
 function toggleFullScreen() {
@@ -216,15 +275,17 @@ function archiveLabel() {
     }
 }
 
+document.getElementById('shareBtn').addEventListener('click', shareLabel);
 function shareLabel() {
     const modal = new bootstrap.Modal(document.getElementById('shareModal'));
     modal.show();
 }
 
+/*document.getElementById('emailBtn').addEventListener('click', emailLabel);
 function emailLabel() {
     const modal = new bootstrap.Modal(document.getElementById('emailModal'));
     modal.show();
-}
+}*/
 
 function reEditLabel() {
     if (confirm('Return to template editor? Any unsaved changes will be lost.')) {

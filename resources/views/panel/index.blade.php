@@ -25,9 +25,9 @@
                     <button class="btn btn-outline-primary">
                         <i class="bi bi-download me-1"></i> Export Report
                     </button>
-                    <button class="btn btn-primary">
+                    <a href="{{ route('panel.add-product') }}" class="btn btn-primary">
                         <i class="bi bi-plus-circle me-1"></i> Create New Label
-                    </button>
+                    </a>
                 </div>
             </div>
             
@@ -115,7 +115,7 @@
                                     </div>
                                     <h6 class="card-title">Create New Label</h6>
                                     <p class="card-text text-muted small">Start creating labels from product images</p>
-                                    <button class="btn btn-primary btn-sm">Create Now</button>
+                                    <a href="{{ route('panel.add-product') }}" class="btn btn-primary btn-sm">Create Now</a>
                                 </div>
                             </div>
                         </div>
@@ -150,11 +150,11 @@
                             <div class="card quick-action-card h-100">
                                 <div class="card-body text-center">
                                     <div class="mb-3">
-                                        <i class="bi bi-printer text-warning" style="font-size: 2rem;"></i>
+                                        <i class="bi bi-graph-up-arrow text-danger" style="font-size: 2rem;"></i>
                                     </div>
-                                    <h6 class="card-title">Quick Print</h6>
-                                    <p class="card-text text-muted small">Print labels with predefined templates</p>
-                                    <button class="btn btn-warning btn-sm">Print Now</button>
+                                    <h6 class="card-title">Analytics</h6>
+                                    <p class="card-text text-muted small">Track print history and usage</p>
+                                    <a href="{{ route('panel.statistics-reports') }}" class="btn btn-danger btn-sm">View Stats</a>
                                 </div>
                             </div>
                         </div>

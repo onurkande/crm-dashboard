@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Site\LabelController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,3 +35,5 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'check.user.type'])-
 Route::get('/', function () {
     return view('site.HomePage');
 });
+
+Route::get('/label/{id}', [LabelController::class, 'show'])->name('show.label');

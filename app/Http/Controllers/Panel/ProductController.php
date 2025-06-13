@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 use App\Services\VisionService;
 use Illuminate\Support\Facades\Log;
 use App\Services\TranslateService;
+use App\Exports\ProductsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -22,10 +24,70 @@ class ProductController extends Controller
         $this->translateService = $translateService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['category', 'translation'])->get();
-        return view('panel.products', compact('products'));
+        $query = Product::with(['category', 'translation']);
+
+        // Category filter
+        if ($request->has('categories') && !empty($request->categories)) {
+            $query->whereIn('category_id', $request->categories);
+        }
+
+        // Date range filter
+        if ($request->has('date_from') && !empty($request->date_from)) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && !empty($request->date_to)) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Tag status filter
+        if ($request->has('tag_status') && !empty($request->tag_status)) {
+            if ($request->tag_status === 'tagged') {
+                $query->whereNotNull('translated_text');
+            } else {
+                $query->whereNull('translated_text');
+            }
+        }
+
+        // Status filter
+        if ($request->has('status') && !empty($request->status)) {
+            $query->where('status', $request->status);
+        }
+
+        // Language status filter
+        if ($request->has('language_status') && !empty($request->language_status)) {
+            if ($request->language_status === 'translated') {
+                $query->whereNotNull('translated_text');
+            } else {
+                $query->whereNull('translated_text');
+            }
+        }
+
+        // Barcode type filter
+        if ($request->has('barcode_type') && !empty($request->barcode_type)) {
+            $query->where('barcode_type', $request->barcode_type);
+        }
+
+        // Search filter
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('description', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('barcode', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('product_code', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        // Get categories for filter dropdown
+        $categories = ProductCategory::all();
+
+        // Get filtered and paginated products
+        $products = $query->paginate(10);
+        $products->appends(request()->query());
+
+        return view('panel.products', compact('products', 'categories'));
     }
 
     public function create()
@@ -128,6 +190,34 @@ class ProductController extends Controller
         
         $product->delete();
 
-        return redirect()->route('products')->with('success', 'Product deleted successfully.');
+        return redirect()->route('panel.products')->with('success', 'Product deleted successfully.');
+    }
+
+    public function updateStatus(Request $request, Product $product)
+    {
+        $product->status = $request->status;
+        $product->save();
+
+        return redirect()->back()->with('success', 'Product status updated successfully');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $productIds = json_decode($request->product_ids);
+        
+        foreach ($productIds as $id) {
+            $product = Product::find($id);
+            if ($product && $product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+            $product->delete();
+        }
+
+        return redirect()->back()->with('success', count($productIds) . ' products deleted successfully.');
+    }
+
+    public function export()
+    {
+        return Excel::download(new ProductsExport, 'products-' . now()->format('Y-m-d') . '.xlsx');
     }
 } 

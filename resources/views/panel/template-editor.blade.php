@@ -204,7 +204,7 @@
                             </div>
                             
                             <div class="d-grid mt-3">
-                                <button class="btn btn-outline-primary btn-sm" id="editProductBtn">
+                                <button class="btn btn-outline-primary btn-sm" id="editProductBtn" data-bs-toggle="modal" data-bs-target="#editProductModal">
                                     <i class="bi bi-pencil me-1"></i> Edit Product Information
                                 </button>
                             </div>
@@ -273,7 +273,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editProductModal" tabindex="-1">
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
