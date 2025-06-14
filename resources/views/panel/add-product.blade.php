@@ -78,13 +78,17 @@
                                         </label>
                                         <select class="form-select" id="sourceLang" name="original_lang" required>
                                             <option value="">Select source language</option>
-                                            <option value="tr">🇹🇷 Turkish</option>
                                             <option value="en">🇺🇸 English</option>
-                                            <option value="fr">🇫🇷 French</option>
-                                            <option value="de">🇩🇪 German</option>
-                                            <option value="it">🇮🇹 Italian</option>
-                                            <option value="pt">🇵🇹 Portuguese</option>
+                                            <option value="bg">🇧🇬 Bulgarian</option>
+                                            <option value="ro">🇷🇴 Romanian</option>
+                                            <option value="ru">🇷🇺 Russian</option>
+                                            <option value="tr">🇹🇷 Turkish</option>
+                                            <option value="ja">🇯🇵 Japanese</option>
+                                            <option value="ko">🇰🇷 Korean</option>
                                             <option value="ar">🇸🇦 Arabic</option>
+                                            <option value="fr">🇫🇷 French</option>
+                                            <option value="it">🇮🇹 Italian</option>
+                                            <option value="de">🇩🇪 German</option>
                                         </select>
                                         <small class="form-text text-muted">Select the language of your original product text</small>
                                         @error('original_lang')
@@ -101,6 +105,28 @@
                                     @error('description')
                                         <div class="alert alert-danger">{{ $message }}</div>
                                     @enderror
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="producer" class="form-label">Producer <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="producer" name="producer" 
+                                               placeholder="Enter producer name" required>
+                                        <small class="form-text text-muted">Required - Name of the product manufacturer</small>
+                                        @error('producer')
+                                            <div class="alert alert-danger">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="importer" class="form-label">Importer <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="importer" name="importer" 
+                                               placeholder="Enter importer name" required>
+                                        <small class="form-text text-muted">Required - Name of the product importer</small>
+                                        @error('importer')
+                                            <div class="alert alert-danger">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -212,11 +238,39 @@
                                 </p>
                                 
                                 <div class="language-options">
+
                                     <div class="language-checkbox" data-lang="en">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="target_lang" id="lang_en" value="en" checked>
                                             <label class="form-check-label" for="lang_en">
                                                 🇺🇸 English (Primary)
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="language-checkbox" data-lang="bg">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target_lang" id="lang_bg" value="bg">
+                                            <label class="form-check-label" for="lang_bg">
+                                                🇧🇬 Bulgarian
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="language-checkbox" data-lang="ro">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target_lang" id="lang_ro" value="ro">
+                                            <label class="form-check-label" for="lang_ro">
+                                                🇷🇴 Romanian
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="language-checkbox" data-lang="ru">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target_lang" id="lang_ru" value="ru">
+                                            <label class="form-check-label" for="lang_ru">
+                                                🇷🇺 Russian
                                             </label>
                                         </div>
                                     </div>
@@ -229,12 +283,48 @@
                                             </label>
                                         </div>
                                     </div>
+
+                                    <div class="language-checkbox" data-lang="ja">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target_lang" id="lang_ja" value="ja">
+                                            <label class="form-check-label" for="lang_ja">
+                                                🇯🇵 Japanese
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="language-checkbox" data-lang="ko">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target_lang" id="lang_ko" value="ko">
+                                            <label class="form-check-label" for="lang_ko">
+                                                🇰🇷 Korean
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="language-checkbox" data-lang="ar">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target_lang" id="lang_ar" value="ar">
+                                            <label class="form-check-label" for="lang_ar">
+                                                🇸🇦 Arabic
+                                            </label>
+                                        </div>
+                                    </div>
                                     
                                     <div class="language-checkbox" data-lang="fr">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="target_lang" id="lang_fr" value="fr">
                                             <label class="form-check-label" for="lang_fr">
                                                 🇫🇷 French
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="language-checkbox" data-lang="it">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="target_lang" id="lang_it" value="it">
+                                            <label class="form-check-label" for="lang_it">
+                                                🇮🇹 Italian
                                             </label>
                                         </div>
                                     </div>
@@ -247,30 +337,12 @@
                                             </label>
                                         </div>
                                     </div>
-                                    
-                                    <div class="language-checkbox" data-lang="it">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="target_lang" id="lang_it" value="it">
-                                            <label class="form-check-label" for="lang_it">
-                                                🇮🇹 Italian
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
+                            
                                     <div class="language-checkbox" data-lang="pt">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="target_lang" id="lang_pt" value="pt">
                                             <label class="form-check-label" for="lang_pt">
                                                 🇵🇹 Portuguese
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="language-checkbox" data-lang="ar">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="target_lang" id="lang_ar" value="ar">
-                                            <label class="form-check-label" for="lang_ar">
-                                                🇸🇦 Arabic
                                             </label>
                                         </div>
                                     </div>

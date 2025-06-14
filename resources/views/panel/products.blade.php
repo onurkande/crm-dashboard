@@ -192,6 +192,7 @@
                                     <th width="30">
                                         <input type="checkbox" class="form-check-input" id="selectAll">
                                     </th>
+                                    <th>Id</th>
                                     <th width="80">Image</th>
                                     <th>Product Name</th>
                                     <th>Category</th>
@@ -199,6 +200,8 @@
                                     <th>Status</th>
                                     <th>Original Language</th>
                                     <th>Target Language</th>
+                                    <th>Producer</th>
+                                    <th>Importer</th>
                                     <th>Created</th>
                                     <th width="120">Actions</th>
                                 </tr>
@@ -208,6 +211,9 @@
                                 <tr>
                                     <td>
                                         <input type="checkbox" class="form-check-input product-checkbox" value="{{ $product->id }}">
+                                    </td>
+                                    <td>
+                                        {{ $product->id }}
                                     </td>
                                     <td>
                                         <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="product-thumbnail">
@@ -248,6 +254,12 @@
                                     </td>
                                     <td class="text-center">
                                         <span class="badge bg-success">{{ $product->target_lang }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">{{ $product->producer }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">{{ $product->importer }}</span>
                                     </td>
                                     <td>
                                         {{ $product->created_at->format('Y-m-d') }}
@@ -348,6 +360,17 @@
                             <h4>{{ $product->name }}</h4>
                             <p class="text-muted">{{ $product->category->name }}</p>
                             <p>{{ $product->description }}</p>
+                            
+                            @if($product->producer || $product->importer)
+                            <div class="mt-3">
+                                @if($product->producer)
+                                <p class="mb-1"><strong>Producer:</strong> {{ $product->producer }}</p>
+                                @endif
+                                @if($product->importer)
+                                <p class="mb-1"><strong>Importer:</strong> {{ $product->importer }}</p>
+                                @endif
+                            </div>
+                            @endif
                             
                             <div class="row g-3 mt-3">
                                 <div class="col-6">

@@ -72,7 +72,6 @@ function setupEventListeners() {
     // Export buttons
     document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
     document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
-    document.getElementById('generateReportBtn').addEventListener('click', openCustomReportModal);
     document.getElementById('generateCustomReportBtn').addEventListener('click', generateCustomReport);
 
     // Custom date range
@@ -311,7 +310,7 @@ function exportToExcel() {
         // Create a simulated download
         const link = document.createElement('a');
         link.href = '#';
-        link.download = 'labelcraft-statistics-report.xlsx';
+        link.download = 'labeltranslate-statistics-report.xlsx';
         link.click();
     }, 2000);
 }
@@ -326,29 +325,9 @@ function exportToPDF() {
         // Create a simulated download
         const link = document.createElement('a');
         link.href = '#';
-        link.download = 'labelcraft-statistics-report.pdf';
+        link.download = 'labeltranslate-statistics-report.pdf';
         link.click();
     }, 3000);
-}
-
-function openCustomReportModal() {
-    const modal = new bootstrap.Modal(document.getElementById('customReportModal'));
-    modal.show();
-}
-
-function generateCustomReport() {
-    const reportType = document.getElementById('reportType').value;
-    const dateRange = document.getElementById('reportDateRange').value;
-    
-    const modal = bootstrap.Modal.getInstance(document.getElementById('customReportModal'));
-    modal.hide();
-    
-    showToast('Generating custom report...', 'info');
-    
-    // Simulate report generation
-    setTimeout(() => {
-        showToast(`${reportType} report for ${dateRange} generated successfully!`, 'success');
-    }, 4000);
 }
 
 function viewAllErrors() {

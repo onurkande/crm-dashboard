@@ -263,7 +263,7 @@ function openArticle(articleId) {
     const body = document.getElementById('articleModalBody');
     
     // Simulate loading article content
-    title.textContent = 'Getting Started with LabelCraft: Complete Setup Guide';
+    title.textContent = 'Getting Started with labeltranslate: Complete Setup Guide';
     body.innerHTML = `
         <div class="article-content">
             <div class="mb-3">
@@ -272,7 +272,7 @@ function openArticle(articleId) {
             </div>
             
             <h4>Introduction</h4>
-            <p>Welcome to LabelCraft! This comprehensive guide will walk you through setting up your account and creating your first professional label in just a few minutes.</p>
+            <p>Welcome to labeltranslate! This comprehensive guide will walk you through setting up your account and creating your first professional label in just a few minutes.</p>
             
             <h4>Step 1: Account Setup</h4>
             <p>After signing up, you'll be taken to the dashboard where you can start uploading product images immediately. Make sure to verify your email address to unlock all features.</p>
@@ -308,7 +308,7 @@ function openVideo(videoId) {
     // Simulate video data
     const videos = {
         'tutorial-1': {
-            title: 'Getting Started with LabelCraft',
+            title: 'Getting Started with labeltranslate',
             url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
             description: 'Complete walkthrough of setting up your account and creating your first label'
         },

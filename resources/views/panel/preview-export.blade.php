@@ -244,6 +244,15 @@
                             <div class="metadata-label">Translation Language</div>
                             <div class="metadata-value">{{ $product->target_lang }}</div>
                         </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Producer</div>
+                            <div class="metadata-value">{{ $product->producer }}</div>
+                        </div>
+                        <div class="metadata-item">
+                            <div class="metadata-label">Importer</div>
+                            <div class="metadata-value">{{ $product->importer }}</div>
+                        </div>
+                        
                         @if($product->qr_code)
                         <div class="metadata-item">
                             <div class="metadata-label">QR Code</div>
@@ -316,11 +325,11 @@
                             </h5>
                             
                             <div class="download-options">
-                                <a href="{{ route('panel.preview-export.pdf', ['product' => $product->id]) }}" class="download-btn" data-format="pdf">
+                                <!--<a href="{{ route('panel.preview-export.pdf', ['product' => $product->id]) }}" class="download-btn" data-format="pdf">
                                     <i class="bi bi-file-earmark-pdf text-danger"></i>
                                     <div class="fw-semibold">PDF</div>
                                     <small class="text-muted">Print Ready</small>
-                                </a>
+                                </a>-->
                                 
                                 <button id="takeScreenshot" class="download-btn">
                                     <i class="bi bi-file-earmark-image text-primary"></i>
@@ -334,7 +343,7 @@
                                     <small class="text-muted">Vector</small>
                                 </button>
                                 
-                                <button class="download-btn" id="printButton">
+                                <button class="download-btn" id="printButton" type="button" data-bs-toggle="modal" data-bs-target="#printOptionsModal">
                                     <i class="bi bi-printer text-warning"></i>
                                     <div class="fw-semibold">Print</div>
                                     <small class="text-muted">Direct Print</small>
@@ -354,7 +363,7 @@
                             </h5>
                             
                             <div class="label-design-canvas">
-                                <iframe id="designFrame" style="width: 100%; height: 400px; border: none; overflow: hidden;"></iframe>
+                                <iframe id="designFrame" style="width: 100%; min-height: 100px; height: auto; border: none; overflow: hidden;"></iframe>
                             </div>
                             
                             <div class="mt-3">
@@ -523,6 +532,39 @@
             </div>
         </div>
     </div>-->
+
+    <!-- Print Options Modal -->
+    <div class="modal fade" id="printOptionsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Print Options</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Number of Labels per Page</label>
+                        <select class="form-select" id="printCount">
+                            <option value="1">1 Label</option>
+                            <option value="2">2 Labels</option>
+                            <option value="4">4 Labels</option>
+                            <option value="8">8 Labels</option>
+                            <option value="16">16 Labels</option>
+                            <option value="32">32 Labels</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Margin (mm)</label>
+                        <input type="number" class="form-control" id="printMargin" value="50" min="0" max="50">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmPrint">Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('js')
@@ -651,50 +693,6 @@
                     }, 2000);
                 });
             };
-
-            // Print functionality
-            const printButton = document.getElementById('printButton');
-            if (printButton) {
-                printButton.addEventListener('click', function() {
-                    const iframe = document.getElementById('designFrame');
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    
-                    // Yazdırma için geçici bir div oluştur
-                    const printDiv = document.createElement('div');
-                    printDiv.innerHTML = `
-                        <style>
-                            @media print {
-                                body * {
-                                    visibility: hidden;
-                                }
-                                #printContent, #printContent * {
-                                    visibility: visible;
-                                }
-                                #printContent {
-                                    position: absolute;
-                                    left: 0;
-                                    top: 0;
-                                    width: 100%;
-                                }
-                            }
-                        </style>
-                        <div id="printContent">
-                            ${iframeDoc.body.innerHTML}
-                        </div>
-                    `;
-                    
-                    // Geçici div'i sayfaya ekle
-                    document.body.appendChild(printDiv);
-                    
-                    // Yazdırma işlemini başlat
-                    window.print();
-                    
-                    // Yazdırma işlemi tamamlandığında geçici div'i kaldır
-                    setTimeout(() => {
-                        document.body.removeChild(printDiv);
-                    }, 1000);
-                });
-            }
 
             // SVG Download functionality
             const downloadSvgBtn = document.getElementById('downloadSvg');

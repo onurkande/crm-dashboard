@@ -14,6 +14,8 @@ class Product extends Model
         'category_id',
         'name',
         'description',
+        'producer',
+        'importer',
         'product_code',
         'image',
         'target_lang',
@@ -43,5 +45,10 @@ class Product extends Model
     public function translations(): HasMany
     {
         return $this->hasMany(ProductTranslation::class);
+    }
+
+    public function faultyProducts()
+    {
+        return $this->hasMany(FaultyProduct::class);
     }
 } 

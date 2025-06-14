@@ -19,6 +19,10 @@
                 <i class="bi bi-box"></i>
                 <span class="nav-text">Products</span>
             </a>
+            <a class="nav-link {{ request()->routeIs('panel.faulty-translations') ? 'active' : '' }}" href="{{ route('panel.faulty-translations') }}">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span class="nav-text">Faulty Translations</span>
+            </a>
             <a class="nav-link {{ request()->routeIs('panel.add-product') ? 'active' : '' }}" href="{{ route('panel.add-product') }}">
                 <i class="bi bi-plus-circle"></i>
                 <span class="nav-text">Add Products</span>

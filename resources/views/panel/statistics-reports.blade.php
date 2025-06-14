@@ -33,9 +33,6 @@
                         <i class="bi bi-file-earmark-pdf text-danger"></i>
                         Export PDF
                     </a>
-                    <button class="btn btn-primary" id="generateReportBtn">
-                        <i class="bi bi-plus-circle me-1"></i> Generate Custom Report
-                    </button>
                 </div>
             </div>
 
@@ -553,99 +550,7 @@
 @endsection
 
 @section('modals')
-    <!-- Custom Report Modal -->
-    <div class="modal fade" id="customReportModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Generate Custom Report</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="customReportForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Report Type</label>
-                                <select class="form-select" id="reportType">
-                                    <option value="summary">Executive Summary</option>
-                                    <option value="detailed">Detailed Analytics</option>
-                                    <option value="cost">Cost Analysis</option>
-                                    <option value="performance">Performance Report</option>
-                                </select>
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Date Range</label>
-                                <select class="form-select" id="reportDateRange">
-                                    <option value="week">Last 7 Days</option>
-                                    <option value="month">Last 30 Days</option>
-                                    <option value="quarter">Last 3 Months</option>
-                                    <option value="year">Last 12 Months</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Include Sections</label>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="includeProduction" checked>
-                                        <label class="form-check-label" for="includeProduction">
-                                            Production Statistics
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="includeCosts" checked>
-                                        <label class="form-check-label" for="includeCosts">
-                                            Cost Analysis
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="includeOCR" checked>
-                                        <label class="form-check-label" for="includeOCR">
-                                            OCR Performance
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="includeTranslation" checked>
-                                        <label class="form-check-label" for="includeTranslation">
-                                            Translation Stats
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="includeScheduler">
-                                        <label class="form-check-label" for="includeScheduler">
-                                            Scheduler Performance
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="includeErrors">
-                                        <label class="form-check-label" for="includeErrors">
-                                            Error Analysis
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Email Recipients (Optional)</label>
-                            <input type="email" class="form-control" placeholder="Enter email addresses separated by commas">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="generateCustomReportBtn">
-                        <i class="bi bi-file-earmark-pdf me-1"></i> Generate Report
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+
 @endsection
 
 @section('js')

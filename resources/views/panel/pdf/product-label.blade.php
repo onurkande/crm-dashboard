@@ -52,6 +52,17 @@
             max-width: 300px;
             height: auto;
         }
+        .producer-importer {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+        .producer-importer div {
+            margin-bottom: 5px;
+        }
+        .producer-importer strong {
+            color: #333;
+        }
         .translation-section {
             margin-top: 30px;
             padding: 20px;
@@ -111,6 +122,20 @@
                 <div class="info-label">Created Date</div>
                 <div class="info-value">{{ $product->created_at->format('d F Y') }}</div>
             </div>
+            <div class="info-item">
+                <div class="info-label">Description</div>
+                <div class="info-value">{{ $product->description }}</div>
+            </div>
+            @if($product->producer || $product->importer)
+            <div class="producer-importer">
+                @if($product->producer)
+                <div><strong>Producer:</strong> {{ $product->producer }}</div>
+                @endif
+                @if($product->importer)
+                <div><strong>Importer:</strong> {{ $product->importer }}</div>
+                @endif
+            </div>
+            @endif
         </div>
     </div>
 

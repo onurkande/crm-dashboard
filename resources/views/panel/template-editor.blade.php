@@ -129,6 +129,21 @@
             </div>
             @endif
 
+            @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show error-message" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="error-icon me-3">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div class="error-content">
+                        <h6 class="alert-heading mb-1">Error!</h6>
+                        <p class="mb-0">{{ session('error') }}</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+
             <!-- Progress Steps -->
             <div class="progress-steps">
                 <div class="step completed">
@@ -146,6 +161,54 @@
                     <span>Preview & Print</span>
                 </div>
             </div>
+
+            @php
+                $pendingFaulty = $product->faultyProducts()->where('status', 'pending')->latest()->first();
+            @endphp
+            @if($pendingFaulty)
+                <div class="alert alert-warning d-flex align-items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="mb-1"><b>Translation Issue Reported</b></div>
+                        <div><b>Error Type:</b> <span class="badge bg-danger text-white">{{ ucfirst($pendingFaulty->error_type) }}</span></div>
+                        <div class="mt-1"><b>Description:</b> {{ $pendingFaulty->description }}</div>
+                        <form action="{{ route('panel.template-editor.retranslate', $product->id) }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                            @csrf
+                            <div class="row g-3 align-items-center mb-3">
+                                <div class="col-auto">
+                                    <label class="form-label mb-0">Original Language:</label>
+                                    <select name="original_lang" class="form-select form-select-sm" required>
+                                        <option value="en">English</option>
+                                        <option value="tr">Turkish</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                        <option value="es">Spanish</option>
+                                    </select>
+                                </div>
+                                <div class="col-auto">
+                                    <label class="form-label mb-0">Target Language:</label>
+                                    <select name="target_lang" class="form-select form-select-sm" required>
+                                        <option value="tr">Turkish</option>
+                                        <option value="en">English</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                        <option value="es">Spanish</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <label class="form-label mb-0">Upload New Image:</label>
+                                <input type="file" name="new_image" accept="image/*" class="form-control form-control-sm w-auto" required>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-arrow-repeat me-1"></i> Retranslate
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @endif
 
             <div class="row">
                 <!-- Left Column -->
@@ -244,9 +307,19 @@
                                     </div>
                                     
                                     <div class="d-flex gap-2">
-                                        <button type="submit" class="btn btn-success">
-                                            <i class="bi bi-check-circle me-1"></i> Save & Continue
-                                        </button>
+                                        @if($product->faultyProducts()->where('status', 'pending')->exists())
+                                            <div class="alert alert-warning mb-0 d-flex align-items-center">
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                <span>This product's translation has been marked as incorrect and is awaiting review.</span>
+                                            </div>
+                                        @else
+                                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#reportFaultyModal">
+                                                <i class="bi bi-exclamation-triangle me-1"></i> Report Translation Issue
+                                            </button>
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="bi bi-check-circle me-1"></i> Save & Continue
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -315,6 +388,26 @@
                             <label class="form-label">Description</label>
                             <textarea class="form-control" rows="3" name="description">{{$product->description}}</textarea>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Producer <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="producer" value="{{$product->producer}}" 
+                                       placeholder="Enter producer name" required>
+                                @error('producer')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Importer <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="importer" value="{{$product->importer}}" 
+                                       placeholder="Enter importer name" required>
+                                @error('importer')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
                         
                         <div class="mb-3">
                             <label class="form-label">Barcode Type</label>
@@ -332,6 +425,43 @@
             </div>
         </div>
     </div>
+
+    <!-- Report Faulty Translation Modal -->
+    <div class="modal fade" id="reportFaultyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Report Translation Issue</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('panel.template-editor.report-faulty', $product->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Error Type</label>
+                            <select class="form-select" name="error_type" required>
+                                <option value="">Select error type</option>
+                                <option value="grammar">Grammar Error</option>
+                                <option value="meaning">Meaning Error</option>
+                                <option value="formatting">Formatting Issue</option>
+                                <option value="missing">Missing Translation</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="3" required placeholder="Please describe the translation issue..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('js')
@@ -344,6 +474,14 @@
             if (successMessage) {
                 setTimeout(function() {
                     const alert = bootstrap.Alert.getOrCreateInstance(successMessage);
+                    alert.close();
+                }, 5000);
+            }
+
+            const errorMessage = document.querySelector('.error-message');
+            if (errorMessage) {
+                setTimeout(function() {
+                    const alert = bootstrap.Alert.getOrCreateInstance(errorMessage);
                     alert.close();
                 }, 5000);
             }

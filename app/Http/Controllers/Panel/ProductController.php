@@ -26,7 +26,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'translation']);
+        $query = Product::with(['category', 'translation', 'faultyProducts']);
 
         // Category filter
         if ($request->has('categories') && !empty($request->categories)) {
@@ -80,6 +80,11 @@ class ProductController extends Controller
             });
         }
 
+        // Exclude products with faulty translations
+        $query->whereDoesntHave('faultyProducts', function($q) {
+            $q->where('status', 'pending');
+        });
+
         // Get categories for filter dropdown
         $categories = ProductCategory::all();
 
@@ -102,6 +107,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'category_id' => 'required',
             'description' => 'nullable|string',
+            'producer' => 'required|string|max:255',
+            'importer' => 'required|string|max:255',
             'product_code' => 'nullable|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif',
             'target_lang' => 'required|string|max:10',
@@ -138,6 +145,8 @@ class ProductController extends Controller
                 $product->category_id = $request->category_id;
                 $product->name = $request->name;
                 $product->description = $request->description;
+                $product->producer = $request->producer;
+                $product->importer = $request->importer;
                 $product->product_code = $request->product_code;
                 $product->image = $imagePathh;
                 $product->target_lang = $request->target_lang;
@@ -171,11 +180,15 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:product_categories,id',
             'description' => 'nullable|string',
+            'producer' => 'required|string|max:255',
+            'importer' => 'required|string|max:255',
         ]);
 
         $product->name = $request->name;
         $product->category_id = $request->category_id;
         $product->description = $request->description;
+        $product->producer = $request->producer;
+        $product->importer = $request->importer;
         
         $product->save();
 
@@ -219,5 +232,53 @@ class ProductController extends Controller
     public function export()
     {
         return Excel::download(new ProductsExport, 'products-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function faultyTranslations(Request $request)
+    {
+        $query = Product::with(['category', 'translation', 'faultyProducts'])
+            ->whereHas('faultyProducts', function($q) {
+                $q->where('status', 'pending');
+            });
+
+        // Category filter
+        if ($request->has('categories') && !empty($request->categories)) {
+            $query->whereIn('category_id', $request->categories);
+        }
+
+        // Date range filter
+        if ($request->has('date_from') && !empty($request->date_from)) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && !empty($request->date_to)) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Error type filter
+        if ($request->has('error_type') && !empty($request->error_type)) {
+            $query->whereHas('faultyProducts', function($q) use ($request) {
+                $q->where('error_type', $request->error_type);
+            });
+        }
+
+        // Search filter
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('description', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('barcode', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('product_code', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        // Get categories for filter dropdown
+        $categories = ProductCategory::all();
+
+        // Get filtered and paginated products
+        $products = $query->paginate(10);
+        $products->appends(request()->query());
+
+        return view('panel.faulty-translations', compact('products', 'categories'));
     }
 } 

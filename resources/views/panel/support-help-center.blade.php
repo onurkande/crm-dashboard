@@ -174,8 +174,8 @@
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
-                                                <h6 class="fw-semibold mb-2">Getting Started with LabelCraft: Complete Setup Guide</h6>
-                                                <p class="text-muted mb-2">Learn how to set up your LabelCraft account, upload your first product images, and create professional labels in minutes.</p>
+                                                <h6 class="fw-semibold mb-2">Getting Started with labeltranslate: Complete Setup Guide</h6>
+                                                <p class="text-muted mb-2">Learn how to set up your labeltranslate account, upload your first product images, and create professional labels in minutes.</p>
                                                 <div class="article-meta d-flex align-items-center gap-3">
                                                     <span><i class="bi bi-calendar3 me-1"></i>Dec 5, 2024</span>
                                                     <span><i class="bi bi-eye me-1"></i>2,847 views</span>
@@ -301,7 +301,7 @@
                                 <div class="col-md-6">
                                     <div class="video-card card h-100">
                                         <div class="video-thumbnail">
-                                            <img src="/placeholder.svg?height=200&width=300&text=LabelCraft+Tutorial+1" 
+                                            <img src="/placeholder.svg?height=200&width=300&text=labeltranslate+Tutorial+1" 
                                                 class="img-fluid" alt="Getting Started Tutorial">
                                             <button class="video-play-btn" data-video-id="tutorial-1">
                                                 <i class="bi bi-play-fill"></i>
@@ -309,7 +309,7 @@
                                             <span class="video-duration">8:42</span>
                                         </div>
                                         <div class="card-body">
-                                            <h6 class="fw-semibold">Getting Started with LabelCraft</h6>
+                                            <h6 class="fw-semibold">Getting Started with labeltranslate</h6>
                                             <p class="text-muted small mb-2">Complete walkthrough of setting up your account and creating your first label</p>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <small class="text-muted">
@@ -480,7 +480,7 @@
                                     <span class="badge bg-success ms-auto">Answered</span>
                                 </div>
                                 <h6 class="fw-semibold mb-2">Integration with external printing services?</h6>
-                                <p class="text-muted mb-0">Is it possible to integrate LabelCraft with third-party printing services like PrintNode or similar APIs? Looking for automated printing workflows.</p>
+                                <p class="text-muted mb-0">Is it possible to integrate labeltranslate with third-party printing services like PrintNode or similar APIs? Looking for automated printing workflows.</p>
                                 <div class="question-stats">
                                     <div class="stat-item">
                                         <i class="bi bi-hand-thumbs-up"></i>
@@ -563,7 +563,7 @@
                                     </div>
                                 </button>
                                 <div class="faq-answer" id="faq-1">
-                                    <p class="mb-0">LabelCraft supports JPG, PNG, TIFF, and PDF formats. For best OCR results, use high-resolution images (300 DPI or higher) with clear, well-lit text.</p>
+                                    <p class="mb-0">labeltranslate supports JPG, PNG, TIFF, and PDF formats. For best OCR results, use high-resolution images (300 DPI or higher) with clear, well-lit text.</p>
                                 </div>
                             </div>
 

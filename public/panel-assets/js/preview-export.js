@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDownloadHandlers();
     setupZoomControls();
     setupChat();
+    
+    // İframe yüksekliğini ayarla
+    const iframe = document.getElementById('designFrame');
+    if (iframe) {
+        iframe.onload = function() {
+            adjustIframeHeight();
+        };
+    }
 });
 
 function initializePage() {
@@ -156,6 +164,15 @@ function editLabel() {
 
 document.getElementById('previewFullLabel').addEventListener('click', previewFullLabel);
 
+function adjustIframeHeight() {
+    const iframe = document.getElementById('designFrame');
+    if (iframe) {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const contentHeight = iframeDoc.body.scrollHeight;
+        iframe.style.height = contentHeight + 'px';
+    }
+}
+
 function previewFullLabel() {
     // iframe içeriğini al
     const iframe = document.getElementById('designFrame');
@@ -172,8 +189,9 @@ function previewFullLabel() {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
-                            ${labelContent}
-                        
+                    <div style="padding: 20px;">
+                        ${labelContent}
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -188,6 +206,9 @@ function previewFullLabel() {
     document.body.appendChild(modal);
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
+    
+    // Modal açıldıktan sonra iframe yüksekliğini ayarla
+    setTimeout(adjustIframeHeight, 100);
     
     modal.addEventListener('hidden.bs.modal', () => {
         modal.remove();
@@ -211,13 +232,18 @@ function downloadFullPreview() {
     // Geçici olarak beyaz arka plan ekle
     designElement.style.backgroundColor = '#ffffff';
     
+    // İçeriğin gerçek yüksekliğini al
+    const contentHeight = designElement.scrollHeight;
+    designElement.style.height = contentHeight + 'px';
+    
     html2canvas(designElement, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
         allowTaint: true,
-        foreignObjectRendering: true
+        foreignObjectRendering: true,
+        height: contentHeight
     }).then(canvas => {
         // Canvas'ı PNG'ye çevir
         const image = canvas.toDataURL('image/png', 1.0);
@@ -496,4 +522,101 @@ document.addEventListener('keydown', function(e) {
         e.preventDefault();
         document.querySelector('[data-format="pdf"]').click();
     }
+});
+
+// Print functionality
+const printButton = document.getElementById('printButton');
+if (printButton) {
+    // Eski event listener'ı kaldır
+    printButton.removeEventListener('click', function() {
+        const printOptionsModal = new bootstrap.Modal(document.getElementById('printOptionsModal'));
+        printOptionsModal.show();
+    });
+}
+
+document.getElementById('confirmPrint').addEventListener('click', function() {
+    const iframe = document.getElementById('designFrame');
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const labelCount = parseInt(document.getElementById('printCount').value);
+    const margin = parseInt(document.getElementById('printMargin').value);
+    
+    // İçeriğin gerçek boyutlarını al
+    const contentWidth = iframeDoc.body.scrollWidth;
+    const contentHeight = iframeDoc.body.scrollHeight;
+    
+    // Grid düzeni için hesaplamalar
+    const gridCols = Math.ceil(Math.sqrt(labelCount));
+    const gridRows = Math.ceil(labelCount / gridCols);
+    
+    // Sayfa boyutlarını hesapla
+    const pageWidth = (contentWidth * gridCols) + (margin * 2 * gridCols);
+    const pageHeight = (contentHeight * gridRows) + (margin * 2 * gridRows);
+    
+    // Yazdırma için geçici bir div oluştur
+    const printDiv = document.createElement('div');
+    printDiv.innerHTML = `
+        <style>
+            @media print {
+                @page {
+                    size: ${pageWidth}px ${pageHeight}px;
+                    margin: 0;
+                }
+                html, body {
+                    margin: 0;
+                    padding: 0;
+                    height: ${pageHeight}px;
+                    overflow: hidden;
+                }
+                body * {
+                    visibility: hidden;
+                }
+                #printContent, #printContent * {
+                    visibility: visible;
+                }
+                #printContent {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: ${pageWidth}px;
+                    height: ${pageHeight}px;
+                    display: grid;
+                    grid-template-columns: repeat(${gridCols}, 1fr);
+                    grid-template-rows: repeat(${gridRows}, 1fr);
+                    gap: ${margin * 2}px;
+                    padding: ${margin}px;
+                }
+                .label-item {
+                    width: ${contentWidth}px;
+                    height: ${contentHeight}px;
+                    page-break-inside: avoid;
+                }
+                @page :first {
+                    margin: 0;
+                }
+                @page :left {
+                    margin: 0;
+                }
+                @page :right {
+                    margin: 0;
+                }
+            }
+        </style>
+        <div id="printContent">
+            ${Array(labelCount).fill(iframeDoc.body.innerHTML).map(content => 
+                `<div class="label-item">${content}</div>`
+            ).join('')}
+        </div>
+    `;
+    
+    // Geçici div'i sayfaya ekle
+    document.body.appendChild(printDiv);
+    
+    // Yazdırma işlemini başlat
+    window.print();
+    
+    // Yazdırma işlemi tamamlandığında geçici div'i kaldır
+    setTimeout(() => {
+        document.body.removeChild(printDiv);
+        bootstrap.Modal.getInstance(document.getElementById('printOptionsModal')).hide();
+    }, 1000);
 });

@@ -2,9 +2,23 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
-    initializeCharts();
     setupEventListeners();
     setupChat();
+    runAllCountUps();
+    renderDailyChart(30); // Varsayılan 30 gün
+    renderMonthlySummaryChart();
+
+    document.querySelectorAll('.daily-range-option').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const days = parseInt(this.dataset.days, 10);
+            renderDailyChart(days);
+
+            // Buton metnini güncelle
+            const btn = document.getElementById('dailyRangeBtn');
+            if (btn) btn.textContent = this.textContent;
+        });
+    });
 });
 
 function initializeDashboard() {
@@ -211,77 +225,7 @@ function addChatMessage(message, sender) {
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-function initializeCharts() {
-    // Daily Labeling Chart
-    const dailyCtx = document.getElementById('dailyChart');
-    if (dailyCtx) {
-        new Chart(dailyCtx, {
-            type: 'bar',
-            data: {
-                labels: Array.from({length: 30}, (_, i) => {
-                    const date = new Date();
-                    date.setDate(date.getDate() - (29 - i));
-                    return date.getDate();
-                }),
-                datasets: [{
-                    label: 'Labels Created',
-                    data: Array.from({length: 30}, () => Math.floor(Math.random() * 200) + 50),
-                    backgroundColor: 'rgba(13, 110, 253, 0.8)',
-                    borderColor: 'rgba(13, 110, 253, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 50
-                        }
-                    }
-                }
-            }
-        });
-    }
 
-    // Monthly Summary Chart
-    const monthlyCtx = document.getElementById('monthlyChart');
-    if (monthlyCtx) {
-        new Chart(monthlyCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Labels Created', 'Translations', 'Print Jobs', 'Templates'],
-                datasets: [{
-                    data: [8924, 342, 156, 89],
-                    backgroundColor: [
-                        'rgba(13, 110, 253, 0.8)',
-                        'rgba(25, 135, 84, 0.8)',
-                        'rgba(255, 193, 7, 0.8)',
-                        'rgba(13, 202, 240, 0.8)'
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-    }
-}
 
 // Handle window resize
 window.addEventListener('resize', function() {
@@ -312,3 +256,118 @@ document.addEventListener('keydown', function(e) {
 
 // Export functions for global use
 window.navigateToPage = navigateToPage;
+
+function animateCountUp(element, target, duration = 1200) {
+    let start = 0;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        element.textContent = Math.floor(progress * (target - start) + start);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            element.textContent = target;
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
+function runAllCountUps() {
+    document.querySelectorAll('.count-up').forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'), 10);
+        if (!isNaN(target)) {
+            animateCountUp(el, target);
+        }
+    });
+}
+
+function getDailyLabelsAndData(days) {
+    const allData = window.dailyTranslatedCounts || {};
+    const allDates = Object.keys(allData).sort();
+    const lastDates = allDates.slice(-days);
+    const labels = lastDates.map(date => date.slice(5)); // 'MM-DD'
+    const data = lastDates.map(date => allData[date]);
+    return { labels, data };
+}
+
+let dailyChartInstance = null;
+
+function renderDailyChart(days = 30) {
+    const ctx = document.getElementById('dailyChart');
+    if (!ctx) return;
+    const { labels, data } = getDailyLabelsAndData(days);
+
+    // Chart.js destroy işlemi (yeni sürümlerde)
+    if (dailyChartInstance) {
+        dailyChartInstance.destroy();
+        dailyChartInstance = null;
+    }
+
+    // Canvas'ı sıfırla (bazı durumlarda gerekebilir)
+    ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+
+    dailyChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Labels Translated',
+                data: data,
+                backgroundColor: 'rgba(25, 135, 84, 0.8)',
+                borderColor: 'rgba(25, 135, 84, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+}
+
+function renderMonthlySummaryChart() {
+    const ctx = document.getElementById('monthlyChart');
+    if (!ctx) return;
+    const data = window.monthlySummary || {};
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Labels Created', 'Translations', 'Print Jobs', 'Templates'],
+            datasets: [{
+                data: [
+                    data.labelsCreated || 0,
+                    data.translations || 0,
+                    data.printJobs || 0,
+                    data.templates || 0
+                ],
+                backgroundColor: [
+                    'rgba(51, 133, 255, 0.9)',   // Mavi
+                    'rgba(52, 168, 83, 0.8)',    // Yeşil
+                    'rgba(251, 188, 5, 0.8)',    // Sarı
+                    'rgba(0, 188, 212, 0.8)'     // Açık mavi
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+}

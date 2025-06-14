@@ -6,6 +6,7 @@ use App\Http\Controllers\Panel\ProductCategoryController;
 use App\Http\Controllers\Panel\TemplateEditorController;
 use App\Http\Controllers\Panel\PreviewExportController;
 use App\Http\Controllers\Panel\IndexController;
+use App\Http\Controllers\Panel\StatisticsReportsController;
 /*
 |--------------------------------------------------------------------------
 | Admin Panel Routes
@@ -35,6 +36,7 @@ Route::get('/products/{product}', [ProductController::class, 'destroy'])->name('
 Route::post('/products/bulk-delete', [ProductController::class, 'bulkDelete'])->name('products.bulk-delete');
 
 Route::get('/preview-export/{product}/pdf', [PreviewExportController::class, 'downloadPDF'])->name('preview-export.pdf');
+Route::get('/dashboard/export-pdf', [IndexController::class, 'exportPdf'])->name('dashboard.export-pdf');
 
 // Category Routes
 Route::get('/categories', [ProductCategoryController::class, 'index'])->name('categories');
@@ -43,9 +45,7 @@ Route::put('/categories/{category}', [ProductCategoryController::class, 'update'
 Route::delete('/categories/{category}', [ProductCategoryController::class, 'destroy'])->name('categories.destroy');
 
 
-Route::get('/statistics-reports', function () {
-    return view('panel.statistics-reports');
-})->name('statistics-reports');
+Route::get('/statistics-reports', [StatisticsReportsController::class, 'index'])->name('statistics-reports');
 
 Route::get('/label-scheduler', function () {
     return view('panel.label-scheduler');
@@ -58,3 +58,8 @@ Route::get('/account-settings', function () {
 Route::get('/support-help-center', function () {
     return view('panel.support-help-center');
 })->name('support-help-center');
+
+Route::post('/template-editor/{product}/report-faulty', [TemplateEditorController::class, 'reportFaulty'])->name('template-editor.report-faulty');
+Route::post('/template-editor/{product}/retranslate', [TemplateEditorController::class, 'retranslate'])->name('template-editor.retranslate');
+
+Route::get('/faulty-translations', [ProductController::class, 'faultyTranslations'])->name('faulty-translations');

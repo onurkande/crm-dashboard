@@ -481,8 +481,12 @@
                             </div>
                         </div>
                     </div>
-                    <a href="{{route('login')}}" class="btn btn-outline-custom">Sign In</a>
-                    <a href="{{route('register')}}" class="btn btn-primary-custom">Get Started</a>
+                    @auth
+                        <a href="{{route('panel.dashboard')}}" class="btn btn-primary-custom">Go to Panel</a>
+                    @else
+                        <a href="{{route('login')}}" class="btn btn-outline-custom">Sign In</a>
+                        <a href="{{route('register')}}" class="btn btn-primary-custom">Get Started</a>
+                    @endauth
                 </div>
             </div>
         </div>

@@ -18,6 +18,16 @@ class PreviewExportController extends Controller
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
+        // Check if product has any faulty reports
+        $hasFaultyReport = $product->faultyProducts()
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($hasFaultyReport) {
+            return redirect()->route('panel.template-editor', ['product' => $product->id])
+                ->with('error', 'This product has pending issues that need to be resolved.');
+        }
+
         return view('panel.preview-export', compact('product'));
     }
 

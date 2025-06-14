@@ -9,9 +9,9 @@
 @endsection
 
 @section('meta')
-    <meta name="description" content="LabelCraft Dashboard">
-    <meta name="keywords" content="LabelCraft, Dashboard, Label Management">
-    <meta name="author" content="LabelCraft">
+    <meta name="description" content="labeltranslate Dashboard">
+    <meta name="keywords" content="labeltranslate, Dashboard, Label Management">
+    <meta name="author" content="labeltranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 @endsection
 
@@ -22,9 +22,9 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h3 fw-bold">Dashboard Overview</h1>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline-primary">
-                        <i class="bi bi-download me-1"></i> Export Report
-                    </button>
+                    <a href="{{ route('panel.dashboard.export-pdf') }}" class="btn btn-outline-danger">
+                        <i class="bi bi-download me-1"></i> Export Pdf
+                    </a>
                     <a href="{{ route('panel.add-product') }}" class="btn btn-primary">
                         <i class="bi bi-plus-circle me-1"></i> Create New Label
                     </a>
@@ -39,8 +39,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-white-50">Total Products</h6>
-                                    <h2 class="fw-bold mb-0">1,247</h2>
-                                    <small class="text-white-50">+12% from last month</small>
+                                    <h2 class="fw-bold mb-0 count-up" data-target="{{$productCount}}">{{$productCount}}</h2>
+                                    <small class="text-white-50">+{{$productPercentageChange}}% from last month</small>
                                 </div>
                                 <div class="fs-1 text-white-50">
                                     <i class="bi bi-box"></i>
@@ -56,8 +56,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-white-50">Labels Created</h6>
-                                    <h2 class="fw-bold mb-0">8,924</h2>
-                                    <small class="text-white-50">+28% from last month</small>
+                                    <h2 class="fw-bold mb-0 count-up" data-target="{{$translatedProductCount}}">{{$translatedProductCount}}</h2>
+                                    <small class="text-white-50">+{{$translatedProductPercentageChange}}% from last month</small>
                                 </div>
                                 <div class="fs-1 text-white-50">
                                     <i class="bi bi-tags"></i>
@@ -73,8 +73,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-white-50">Planned Jobs</h6>
-                                    <h2 class="fw-bold mb-0">156</h2>
-                                    <small class="text-white-50">+5% from last week</small>
+                                    <h2 class="fw-bold mb-0 count-up" data-target="156">156</h2>
+                                    <small class="text-white-50">Dinamik Yapılacak</small>
                                 </div>
                                 <div class="fs-1 text-white-50">
                                     <i class="bi bi-calendar-check"></i>
@@ -90,8 +90,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-white-50">Recent Translations</h6>
-                                    <h2 class="fw-bold mb-0">342</h2>
-                                    <small class="text-white-50">+18% from last week</small>
+                                    <h2 class="fw-bold mb-0 count-up" data-target="{{$translationStats['lastWeek']}}">{{$translationStats['lastWeek']}}</h2>
+                                    <small class="text-white-50">+{{$translationStats['percentageChange']}}% from last week</small>
                                 </div>
                                 <div class="fs-1 text-white-50">
                                     <i class="bi bi-translate"></i>
@@ -127,7 +127,7 @@
                                         <i class="bi bi-cloud-upload text-success" style="font-size: 2rem;"></i>
                                     </div>
                                     <h6 class="card-title">Bulk Upload</h6>
-                                    <p class="card-text text-muted small">Upload multiple product images at once</p>
+                                    <p class="card-text text-muted small">Dinamik Yapılacak</p>
                                     <button class="btn btn-success btn-sm">Upload Files</button>
                                 </div>
                             </div>
@@ -140,7 +140,7 @@
                                         <i class="bi bi-translate text-info" style="font-size: 2rem;"></i>
                                     </div>
                                     <h6 class="card-title">Auto Translate</h6>
-                                    <p class="card-text text-muted small">Translate existing labels to new languages</p>
+                                    <p class="card-text text-muted small">Dinamik Yapılacak</p>
                                     <button class="btn btn-info btn-sm">Translate</button>
                                 </div>
                             </div>
@@ -164,18 +164,18 @@
 
             <!-- Charts and Analytics -->
             <div class="row g-4">
-                <div class="col-lg-8">
+                <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h6 class="card-title mb-0">Daily Labeling Activity (Last 30 Days)</h6>
                             <div class="dropdown">
-                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" id="dailyRangeBtn">
                                     Last 30 Days
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
-                                    <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
-                                    <li><a class="dropdown-item" href="#">Last 90 Days</a></li>
+                                    <li><a class="dropdown-item daily-range-option" href="#" data-days="7">Last 7 Days</a></li>
+                                    <li><a class="dropdown-item daily-range-option" href="#" data-days="30">Last 30 Days</a></li>
+                                    <li><a class="dropdown-item daily-range-option" href="#" data-days="90">Last 90 Days</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -184,11 +184,50 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Monthly Summary -->
+            <div class="row g-4 mt-2">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Monthly Summary</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="monthlyChart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
                 
-                <div class="col-lg-4">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Most Printed Products</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                @foreach ($topCategories as $category)
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>{{$category['name']}}</span>
+                                            <span class="fw-bold">{{$category['count']}} labels</span>
+                                        </div>
+                                        <div class="progress mb-3" style="height: 6px;">
+                                            <div class="progress-bar" style="width: {{ ($category['count'] / 100 * 100) }}%; background-color: {{ '#' . substr(md5($category['name']), 0, 6) }};"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-2">
+                <div class="col-lg-6">
                     <div class="card h-100">
                         <div class="card-header">
-                            <h6 class="card-title mb-0">Recent System Messages</h6>
+                            <h6 class="card-title mb-0">Dinamik Yapılacak</h6>
                         </div>
                         <div class="card-body">
                             <div class="list-group list-group-flush">
@@ -254,81 +293,6 @@
                             </div>
                             
                             <button class="btn btn-outline-primary btn-sm w-100 mt-3">View All Messages</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Monthly Summary -->
-            <div class="row g-4 mt-2">
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">Monthly Summary</h6>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="monthlyChart" height="150"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">Most Printed Products</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span>Premium Coffee Blend</span>
-                                        <span class="fw-bold">2,847 labels</span>
-                                    </div>
-                                    <div class="progress mb-3" style="height: 6px;">
-                                        <div class="progress-bar" style="width: 85%"></div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-12">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span>Organic Tea Collection</span>
-                                        <span class="fw-bold">1,923 labels</span>
-                                    </div>
-                                    <div class="progress mb-3" style="height: 6px;">
-                                        <div class="progress-bar bg-success" style="width: 68%"></div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-12">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span>Artisan Chocolate</span>
-                                        <span class="fw-bold">1,456 labels</span>
-                                    </div>
-                                    <div class="progress mb-3" style="height: 6px;">
-                                        <div class="progress-bar bg-info" style="width: 52%"></div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-12">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span>Natural Skincare</span>
-                                        <span class="fw-bold">1,098 labels</span>
-                                    </div>
-                                    <div class="progress mb-3" style="height: 6px;">
-                                        <div class="progress-bar bg-warning" style="width: 39%"></div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-12">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span>Gourmet Spices</span>
-                                        <span class="fw-bold">876 labels</span>
-                                    </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar bg-danger" style="width: 31%"></div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -438,6 +402,10 @@
 @endsection
 
 @section('js')
+    <script>
+        window.dailyTranslatedCounts = @json($dailyTranslatedCounts);
+        window.monthlySummary = @json($monthlySummary);
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ asset('panel-assets/js/index.js') }}"></script>
