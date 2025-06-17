@@ -140,6 +140,56 @@
         .copy-link:hover {
             background-color: #5a6268;
         }
+        @media print {
+    body * {
+        visibility: hidden;
+    }
+    #printArea, #printArea * {
+        visibility: visible;
+    }
+    #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}
+
+#printArea {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5mm;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    justify-content: space-between; /* Etiketler arası boşluk */
+}
+
+.label-item {
+    width: 60mm;
+    height: 30mm;
+    border: 1px dashed #ccc;
+    box-sizing: border-box;
+    overflow: hidden;
+    page-break-inside: avoid;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+}
+
+.label-content {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    padding: 2mm;
+    box-sizing: border-box;
+    text-align: left;
+    word-break: break-word;
+    display: block;
+}
+        
     </style>
 @endsection
 
@@ -498,41 +548,6 @@
         </div>
     </div>
 
-    <!-- PNG Settings Modal -->
-    <!--<div class="modal fade" id="pngSettingsModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">PNG Export Settings</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="pngSettingsForm" action="" method="GET">
-                        <div class="mb-3">
-                            <label class="form-label">Width (px)</label>
-                            <input type="number" class="form-control" name="width" value="800" min="100" max="3000">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Height (px)</label>
-                            <input type="number" class="form-control" name="height" value="600" min="100" max="3000">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Quality (%)</label>
-                            <input type="range" class="form-range" name="quality" min="1" max="100" value="100">
-                            <div class="text-end"><span id="qualityValue">100%</span></div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="pngSettingsForm" class="btn btn-primary">Download PNG</button>
-                </div>
-            </div>
-        </div>
-    </div>-->
-
     <!-- Print Options Modal -->
     <div class="modal fade" id="printOptionsModal" tabindex="-1">
         <div class="modal-dialog">
@@ -550,12 +565,24 @@
                             <option value="4">4 Labels</option>
                             <option value="8">8 Labels</option>
                             <option value="16">16 Labels</option>
-                            <option value="32">32 Labels</option>
+                            <option value="32" selected>32 Labels</option>
+                            <option value="64">64 Labels</option>
+                            <option value="128">128 Labels</option>
+                            <option value="256">256 Labels</option>
+                            <option value="512">512 Labels</option>
+                            <option value="1024">1024 Labels</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Margin (mm)</label>
-                        <input type="number" class="form-control" id="printMargin" value="50" min="0" max="50">
+                        <label class="form-label">Label Width (mm)</label>
+                        <input type="number" class="form-control" id="labelWidth" value="60" min="10" step="1">
+                        <small class="text-muted">Standart genişlik 60mm’dir.</small>
+                    </div>
+                
+                    <div class="mb-3">
+                        <label class="form-label">Label Height (mm)</label>
+                        <input type="number" class="form-control" id="labelHeight" value="30" min="10" step="1">
+                        <small class="text-muted">Standart yükseklik 30mm’dir.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -575,6 +602,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             // CKEditor içeriğini iframe'e yerleştir
             const designContent = `{!! $product->translation->design_translated_text ?? $product->translated_text !!}`;
+            const importerInfo = `{!! $product->importer ?? '' !!}`;
+            const producerInfo = `{!! $product->producer ?? '' !!}`;
             const iframe = document.getElementById('designFrame');
             iframe.onload = function() {
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -584,12 +613,22 @@
                     <html>
                     <head>
                         <style>
-                            body { margin: 0; padding: 0; }
+                            body { margin: 0; padding: 0; position: relative; }
                             img { max-width: 100%; height: auto; }
+                            .info-footer {
+                                position: relative;
+                                margin-top: 20px;
+                                padding: 10px;
+                                font-size: 12px;
+                                color: #666;
+                                text-align: right;
+                            }
                         </style>
                     </head>
                     <body>
                         ${designContent}
+                            ${importerInfo ? `<div>Importer: ${importerInfo}</div>` : ''}
+                            ${producerInfo ? `<div>Producer: ${producerInfo}</div>` : ''}
                     </body>
                     </html>
                 `);

@@ -527,96 +527,125 @@ document.addEventListener('keydown', function(e) {
 // Print functionality
 const printButton = document.getElementById('printButton');
 if (printButton) {
-    // Eski event listener'ı kaldır
-    printButton.removeEventListener('click', function() {
+    printButton.addEventListener('click', function() {
         const printOptionsModal = new bootstrap.Modal(document.getElementById('printOptionsModal'));
         printOptionsModal.show();
     });
 }
 
-document.getElementById('confirmPrint').addEventListener('click', function() {
-    const iframe = document.getElementById('designFrame');
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    const labelCount = parseInt(document.getElementById('printCount').value);
-    const margin = parseInt(document.getElementById('printMargin').value);
-    
-    // İçeriğin gerçek boyutlarını al
-    const contentWidth = iframeDoc.body.scrollWidth;
-    const contentHeight = iframeDoc.body.scrollHeight;
-    
-    // Grid düzeni için hesaplamalar
-    const gridCols = Math.ceil(Math.sqrt(labelCount));
-    const gridRows = Math.ceil(labelCount / gridCols);
-    
-    // Sayfa boyutlarını hesapla
-    const pageWidth = (contentWidth * gridCols) + (margin * 2 * gridCols);
-    const pageHeight = (contentHeight * gridRows) + (margin * 2 * gridRows);
-    
-    // Yazdırma için geçici bir div oluştur
-    const printDiv = document.createElement('div');
-    printDiv.innerHTML = `
-        <style>
-            @media print {
-                @page {
-                    size: ${pageWidth}px ${pageHeight}px;
-                    margin: 0;
+// Confirm Print functionality
+document.getElementById('confirmPrint').addEventListener('click', function () {
+    const count = parseInt(document.getElementById('printCount').value);
+    const width = parseFloat(document.getElementById('labelWidth').value) || 60;
+    const height = parseFloat(document.getElementById('labelHeight').value) || 30;
+
+    const designFrame = document.getElementById('designFrame');
+    if (!designFrame || !designFrame.contentDocument) {
+        alert('designFrame bulunamadı veya erişilemedi.');
+        return;
+    }
+
+    const contentHTML = designFrame.contentDocument.body.innerHTML;
+
+    // Yeni sekme aç
+    const printWindow = window.open('', '_blank');
+    const doc = printWindow.document;
+
+    doc.write(`
+        <html>
+        <head>
+            <style>
+                @media print {
+                    body * {
+                        visibility: visible;
+                    }
                 }
-                html, body {
+                body {
+                    width: 210mm;
+                    min-height: 297mm;
                     margin: 0;
                     padding: 0;
-                    height: ${pageHeight}px;
-                    overflow: hidden;
-                }
-                body * {
-                    visibility: hidden;
-                }
-                #printContent, #printContent * {
-                    visibility: visible;
-                }
-                #printContent {
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    width: ${pageWidth}px;
-                    height: ${pageHeight}px;
-                    display: grid;
-                    grid-template-columns: repeat(${gridCols}, 1fr);
-                    grid-template-rows: repeat(${gridRows}, 1fr);
-                    gap: ${margin * 2}px;
-                    padding: ${margin}px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 5mm;
+                    font-family: Arial, sans-serif;
+                    box-sizing: border-box;
                 }
                 .label-item {
-                    width: ${contentWidth}px;
-                    height: ${contentHeight}px;
-                    page-break-inside: avoid;
+                    width: ${width}mm;
+                    height: ${height}mm;
+                    border: 1px dashed #ccc;
+                    box-sizing: border-box;
+                    overflow: hidden;
+                    padding: 2mm;
+                    display: flex;
+                    align-items: stretch;
+                    justify-content: stretch;
                 }
-                @page :first {
-                    margin: 0;
+                .label-content {
+                    width: 100%;
+                    height: 100%;
+                    overflow: hidden;
+                    box-sizing: border-box;
+                    word-break: break-word;
                 }
-                @page :left {
-                    margin: 0;
-                }
-                @page :right {
-                    margin: 0;
+            </style>
+        </head>
+        <body>
+    `);
+
+    for (let i = 0; i < count; i++) {
+        doc.write(`
+            <div class="label-item">
+                <div class="label-content">${contentHTML}</div>
+            </div>
+        `);
+    }
+
+    doc.write(`
+        <script>
+            function autoShrinkFont(el, startSize = 14, minSize = 1) {
+                let fontSize = startSize;
+                el.style.fontSize = fontSize + 'pt';
+                while (el.scrollHeight > el.offsetHeight && fontSize > minSize) {
+                    fontSize -= 0.5;
+                    el.style.fontSize = fontSize + 'pt';
                 }
             }
-        </style>
-        <div id="printContent">
-            ${Array(labelCount).fill(iframeDoc.body.innerHTML).map(content => 
-                `<div class="label-item">${content}</div>`
-            ).join('')}
-        </div>
-    `;
-    
-    // Geçici div'i sayfaya ekle
-    document.body.appendChild(printDiv);
-    
-    // Yazdırma işlemini başlat
-    window.print();
-    
-    // Yazdırma işlemi tamamlandığında geçici div'i kaldır
-    setTimeout(() => {
-        document.body.removeChild(printDiv);
-        bootstrap.Modal.getInstance(document.getElementById('printOptionsModal')).hide();
-    }, 1000);
+            window.onload = function () {
+                const labels = document.querySelectorAll('.label-content');
+                labels.forEach(el => autoShrinkFont(el));
+                window.print();
+                // Yazdırma işlemi bitince pencereyi kapat
+    window.onafterprint = function () {
+        window.close();
+    };
+            };
+        <\/script>
+        </body></html>
+    `);
+
+    doc.close();
 });
+
+
+/**
+ * Yazı sığmıyorsa yazı boyutunu küçültür.
+ * @param {HTMLElement} el
+ * @param {number} startSize
+ * @param {number} minSize
+ */
+function autoShrinkFont(el, startSize = 14, minSize = 1) {
+    let fontSize = startSize;
+    el.style.fontSize = fontSize + 'pt';
+
+    while (el.scrollHeight > el.offsetHeight && fontSize > minSize) {
+        fontSize -= 0.5;
+        el.style.fontSize = fontSize + 'pt';
+    }
+}
+
+
+
+
+

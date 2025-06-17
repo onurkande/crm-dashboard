@@ -1,10 +1,11 @@
 // Statistics & Reports JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded'); // Debug: DOM yüklendi mi?
     initializePage();
     setupEventListeners();
     initializeCharts();
-    generateHeatmap();
+    
     setupChat();
 });
 
@@ -53,30 +54,8 @@ function setupEventListeners() {
         });
     });
 
-    // Filter tabs
-    document.querySelectorAll('.filter-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            
-            const period = this.dataset.period;
-            if (period === 'custom') {
-                document.getElementById('customDateRange').style.display = 'block';
-            } else {
-                document.getElementById('customDateRange').style.display = 'none';
-                updateDataForPeriod(period);
-            }
-        });
-    });
 
-    // Export buttons
-    document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
-    document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
-    document.getElementById('generateCustomReportBtn').addEventListener('click', generateCustomReport);
 
-    // Custom date range
-    document.getElementById('applyCustomRange').addEventListener('click', applyCustomDateRange);
-    document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
 
     // Chart options
     document.querySelectorAll('[data-chart-type]').forEach(option => {
@@ -87,8 +66,6 @@ function setupEventListeners() {
         });
     });
 
-    // Error samples
-    document.getElementById('viewAllErrorsBtn').addEventListener('click', viewAllErrors);
 
     // Close sidebar when clicking outside on mobile
     document.addEventListener('click', function(e) {
@@ -125,42 +102,21 @@ function updateDataForPeriod(period) {
     showToast(`Data updated for ${period} period`, 'info');
 }
 
-function applyCustomDateRange() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    
-    if (!startDate || !endDate) {
-        showToast('Please select both start and end dates', 'warning');
-        return;
-    }
-    
-    if (new Date(startDate) > new Date(endDate)) {
-        showToast('Start date cannot be after end date', 'warning');
-        return;
-    }
-    
-    showToast(`Custom date range applied: ${startDate} to ${endDate}`, 'success');
-    updateChartsData('custom');
-}
 
-function resetFilters() {
-    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector('[data-period="today"]').classList.add('active');
-    document.getElementById('customDateRange').style.display = 'none';
-    updateDataForPeriod('today');
-}
-
+initializeCharts();
 function initializeCharts() {
     // Production Trends Chart
     const productionCtx = document.getElementById('productionChart');
     if (productionCtx) {
+        const monthlyCounts = window.monthlyTranslationCounts || [0,0,0,0,0,0,0,0,0,0,0,0];
+        
         window.productionChart = new Chart(productionCtx, {
             type: 'bar',
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label: 'Labels Produced',
-                    data: [1200, 1900, 3000, 2500, 2200, 3000, 3500, 4000, 3200, 2800, 3800, 4200],
+                    data: monthlyCounts,
                     backgroundColor: 'rgba(13, 110, 253, 0.8)',
                     borderColor: 'rgba(13, 110, 253, 1)',
                     borderWidth: 1
@@ -178,7 +134,7 @@ function initializeCharts() {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1000
+                            stepSize: 1
                         }
                     }
                 }
@@ -189,12 +145,18 @@ function initializeCharts() {
     // Category Distribution Chart
     const categoryCtx = document.getElementById('categoryChart');
     if (categoryCtx) {
+        // Dinamik kategori verilerini hazırla
+        const categoryStats = window.categoryStats || [];
+        const labels = categoryStats.map(cat => cat.name);
+        const data = categoryStats.map(cat => cat.percentage);
+        const counts = categoryStats.map(cat => cat.product_count);
+
         new Chart(categoryCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Food & Beverages', 'Cosmetics', 'Electronics', 'Clothing', 'Others'],
+                labels: labels,
                 datasets: [{
-                    data: [35.2, 24.3, 22.2, 11.9, 6.4],
+                    data: data,
                     backgroundColor: [
                         'rgba(13, 110, 253, 0.8)',
                         'rgba(25, 135, 84, 0.8)',
@@ -217,61 +179,37 @@ function initializeCharts() {
             }
         });
     }
-
-    // Scheduler Success Chart
-    const schedulerCtx = document.getElementById('schedulerChart');
-    if (schedulerCtx) {
-        window.schedulerChart = new Chart(schedulerCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Successful', 'Failed', 'Skipped'],
-                datasets: [{
-                    data: [94.2, 2.6, 3.2],
-                    backgroundColor: [
-                        'rgba(25, 135, 84, 0.8)',
-                        'rgba(220, 53, 69, 0.8)',
-                        'rgba(255, 193, 7, 0.8)'
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        display: true
-                    }
-                }
-            }
-        });
-    }
 }
 
+// Progress bar renklerini belirleyen yardımcı fonksiyon
+function getProgressBarColor(index) {
+    const colors = ['', 'bg-success', 'bg-info', 'bg-warning', 'bg-danger'];
+    return colors[index % colors.length];
+}
+generateHeatmap();
 function generateHeatmap() {
     const heatmapContainer = document.getElementById('activityHeatmap');
     heatmapContainer.innerHTML = '';
-    
-    // Generate 24 hours of activity data
+
+    // Backend'den gelen saatlik aktivite verisi
+    const activityData = window.hourlyActivityHeatmap || Array(24).fill(0);
+
+    // Aktivite seviyelerini normalize et (0-5 arası)
+    const max = Math.max(...activityData);
+    const min = Math.min(...activityData);
+
     for (let hour = 0; hour < 24; hour++) {
         const cell = document.createElement('div');
         cell.className = 'heatmap-cell';
-        
-        // Simulate activity levels (higher during business hours)
+
+        // Seviyeyi 0-5 arası bir değere dönüştür
         let level = 0;
-        if (hour >= 8 && hour <= 18) {
-            level = Math.floor(Math.random() * 4) + 2; // 2-5 for business hours
-        } else if (hour >= 6 && hour <= 22) {
-            level = Math.floor(Math.random() * 3) + 1; // 1-3 for extended hours
-        } else {
-            level = Math.floor(Math.random() * 2); // 0-1 for night hours
+        if (max > min) {
+            level = Math.round(((activityData[hour] - min) / (max - min)) * 5);
         }
-        
         cell.classList.add(`level-${level}`);
-        cell.title = `${hour}:00 - Activity Level: ${level}`;
-        
+        cell.title = `${hour}:00 - Activity: ${activityData[hour]}`;
+
         heatmapContainer.appendChild(cell);
     }
 }
@@ -300,44 +238,8 @@ function generateRandomData(period) {
     return baseData.map(value => Math.floor(value * multiplier * (0.8 + Math.random() * 0.4)));
 }
 
-function exportToExcel() {
-    showToast('Preparing Excel export...', 'info');
-    
-    // Simulate export process
-    setTimeout(() => {
-        showToast('Excel report exported successfully!', 'success');
-        
-        // Create a simulated download
-        const link = document.createElement('a');
-        link.href = '#';
-        link.download = 'labeltranslate-statistics-report.xlsx';
-        link.click();
-    }, 2000);
-}
 
-function exportToPDF() {
-    showToast('Generating PDF report...', 'info');
-    
-    // Simulate export process
-    setTimeout(() => {
-        showToast('PDF report generated successfully!', 'success');
-        
-        // Create a simulated download
-        const link = document.createElement('a');
-        link.href = '#';
-        link.download = 'labeltranslate-statistics-report.pdf';
-        link.click();
-    }, 3000);
-}
 
-function viewAllErrors() {
-    showToast('Opening detailed error analysis...', 'info');
-    
-    // Simulate opening detailed view
-    setTimeout(() => {
-        showToast('Error analysis view loaded', 'success');
-    }, 1500);
-}
 
 // Sidebar and theme functions (same as previous pages)
 function toggleSidebar() {
@@ -384,7 +286,7 @@ function setLanguage(lang) {
         'es': '🇪🇸 ES',
         'fr': '🇫🇷 FR',
         'de': '🇩🇪 DE',
-        'tr': '🇹🇷 TR'
+        'tr': '��🇷 TR'
     };
     
     document.getElementById('currentLanguage').textContent = languageMap[lang].split(' ')[1];
@@ -504,15 +406,5 @@ document.addEventListener('keydown', function(e) {
         document.getElementById('chatModal').style.display = 'none';
     }
 
-    // Ctrl/Cmd + E to export Excel
-    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-        e.preventDefault();
-        exportToExcel();
-    }
 
-    // Ctrl/Cmd + P to export PDF
-    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-        e.preventDefault();
-        exportToPDF();
-    }
 });

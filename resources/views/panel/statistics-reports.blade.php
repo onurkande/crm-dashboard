@@ -24,53 +24,6 @@
                     <h1 class="h3 fw-bold mb-1">Statistics & Reports</h1>
                     <p class="text-muted mb-0">Comprehensive analytics and insights for your label production</p>
                 </div>
-                <div class="export-buttons">
-                    <a href="#" class="export-btn" id="exportExcelBtn">
-                        <i class="bi bi-file-earmark-excel text-success"></i>
-                        Export Excel
-                    </a>
-                    <a href="#" class="export-btn" id="exportPdfBtn">
-                        <i class="bi bi-file-earmark-pdf text-danger"></i>
-                        Export PDF
-                    </a>
-                </div>
-            </div>
-
-            <!-- Time Range Filter -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-semibold mb-0">
-                            <i class="bi bi-calendar-range me-2"></i>Time Range Filter
-                        </h6>
-                        <button class="btn btn-outline-secondary btn-sm" id="resetFiltersBtn">
-                            <i class="bi bi-arrow-clockwise me-1"></i> Reset
-                        </button>
-                    </div>
-                    
-                    <div class="filter-tabs">
-                        <button class="filter-tab active" data-period="today">Today</button>
-                        <button class="filter-tab" data-period="week">This Week</button>
-                        <button class="filter-tab" data-period="month">This Month</button>
-                        <button class="filter-tab" data-period="year">This Year</button>
-                        <button class="filter-tab" data-period="custom">Custom Range</button>
-                    </div>
-                    
-                    <div class="row" id="customDateRange" style="display: none;">
-                        <div class="col-md-4">
-                            <label class="form-label">Start Date</label>
-                            <input type="date" class="form-control" id="startDate">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">End Date</label>
-                            <input type="date" class="form-control" id="endDate">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">&nbsp;</label>
-                            <button class="btn btn-primary d-block" id="applyCustomRange">Apply Range</button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Key Metrics Dashboard -->
@@ -81,8 +34,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-white-50">Total Labels</h6>
-                                    <h2 class="fw-bold mb-0" id="totalLabels">12,847</h2>
-                                    <small class="text-white-50">+15% from last period</small>
+                                    <h2 class="fw-bold mb-0" id="totalLabels">{{ $productCount }}</h2>
+                                    <small class="text-white-50">{{ $productPercentageChange }}% from last period</small>
                                 </div>
                                 <div class="fs-1 text-white-50">
                                     <i class="bi bi-tags"></i>
@@ -98,8 +51,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-white-50">OCR Success Rate</h6>
-                                    <h2 class="fw-bold mb-0" id="ocrSuccessRate">94.2%</h2>
-                                    <small class="text-white-50">+2.1% improvement</small>
+                                    <h2 class="fw-bold mb-0" id="ocrSuccessRate">{{ $current_rate }}%</h2>
+                                    <small class="text-white-50">{{ $improvement }}% improvement</small>
                                 </div>
                                 <div class="fs-1 text-white-50">
                                     <i class="bi bi-eye"></i>
@@ -132,7 +85,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="card-subtitle mb-2 text-white-50">Languages</h6>
-                                    <h2 class="fw-bold mb-0" id="languageCount">12</h2>
+                                    <h2 class="fw-bold mb-0" id="languageCount">{{ $distinctLanguagesCount }}</h2>
                                     <small class="text-white-50">Active translations</small>
                                 </div>
                                 <div class="fs-1 text-white-50">
@@ -153,16 +106,6 @@
                             <h5 class="section-title mb-0">
                                 <i class="bi bi-graph-up me-2"></i>Label Production Trends
                             </h5>
-                            <div class="dropdown">
-                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                                    <i class="bi bi-gear me-1"></i> Chart Options
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#" data-chart-type="bar">Bar Chart</a></li>
-                                    <li><a class="dropdown-item" href="#" data-chart-type="line">Line Chart</a></li>
-                                    <li><a class="dropdown-item" href="#" data-chart-type="area">Area Chart</a></li>
-                                </ul>
-                            </div>
                         </div>
                         <div class="card-body">
                             <canvas id="productionChart" class="chart-container large"></canvas>
@@ -182,55 +125,17 @@
                                     <canvas id="categoryChart" class="chart-container"></canvas>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="progress-metric">
-                                        <div class="d-flex justify-content-between">
-                                            <span class="metric-label">Food & Beverages</span>
-                                            <span class="metric-value">4,523 (35.2%)</span>
+                                    @foreach ($getTopCategoriesStats as $category)
+                                        <div class="progress-metric">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="metric-label">{{ $category['name'] }}</span>
+                                                <span class="metric-value">{{ $category['product_count'] }} ({{ $category['percentage'] }}%)</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar" style="width: {{ $category['percentage'] }}%"></div>
+                                            </div>
                                         </div>
-                                        <div class="progress">
-                                            <div class="progress-bar" style="width: 35.2%"></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="progress-metric">
-                                        <div class="d-flex justify-content-between">
-                                            <span class="metric-label">Cosmetics</span>
-                                            <span class="metric-value">3,124 (24.3%)</span>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-success" style="width: 24.3%"></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="progress-metric">
-                                        <div class="d-flex justify-content-between">
-                                            <span class="metric-label">Electronics</span>
-                                            <span class="metric-value">2,847 (22.2%)</span>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-info" style="width: 22.2%"></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="progress-metric">
-                                        <div class="d-flex justify-content-between">
-                                            <span class="metric-label">Clothing</span>
-                                            <span class="metric-value">1,523 (11.9%)</span>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-warning" style="width: 11.9%"></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="progress-metric">
-                                        <div class="d-flex justify-content-between">
-                                            <span class="metric-label">Others</span>
-                                            <span class="metric-value">830 (6.4%)</span>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-danger" style="width: 6.4%"></div>
-                                        </div>
-                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
@@ -280,54 +185,27 @@
                         </div>
                         <div class="card-body">
                             <div class="language-stats">
+                                @foreach ($topLanguages as $language)
                                 <div class="language-item">
-                                    <span class="language-flag">🇪🇸</span>
+                                    <span class="language-flag">{{ $language->target_lang }}</span>
                                     <div>
-                                        <div class="fw-semibold">Spanish</div>
-                                        <small class="text-muted">3,247 translations</small>
+                                        <div class="fw-semibold">{{ $language->getTargetLanguageName() }}</div>
+                                        <small class="text-muted">{{ $language->count }} translations</small>
                                     </div>
                                 </div>
-                                
-                                <div class="language-item">
-                                    <span class="language-flag">🇫🇷</span>
-                                    <div>
-                                        <div class="fw-semibold">French</div>
-                                        <small class="text-muted">2,891 translations</small>
-                                    </div>
-                                </div>
-                                
-                                <div class="language-item">
-                                    <span class="language-flag">🇩🇪</span>
-                                    <div>
-                                        <div class="fw-semibold">German</div>
-                                        <small class="text-muted">2,456 translations</small>
-                                    </div>
-                                </div>
-                                
-                                <div class="language-item">
-                                    <span class="language-flag">🇮🇹</span>
-                                    <div>
-                                        <div class="fw-semibold">Italian</div>
-                                        <small class="text-muted">1,923 translations</small>
-                                    </div>
-                                </div>
+                                @endforeach
                             </div>
                             
                             <hr class="my-3">
                             
                             <div class="metric-item">
-                                <span class="metric-label">Translation Errors</span>
-                                <span class="metric-value text-warning">127 (2.8%)</span>
+                                <span class="metric-label">Translation Errors:</span>
+                                <span class="metric-value text-warning">{{ $translationErrorsCount }} ({{ $translationErrorsPercentage }}%)</span>
                             </div>
                             
                             <div class="metric-item">
-                                <span class="metric-label">Avg. Processing Time</span>
-                                <span class="metric-value">1.2s</span>
-                            </div>
-                            
-                            <div class="metric-item">
-                                <span class="metric-label">Characters Processed</span>
-                                <span class="metric-value">2.4M</span>
+                                <span class="metric-label">Words Processed</span>
+                                <span class="metric-value">{{ $totalUntranslatedWords }}</span>
                             </div>
                         </div>
                     </div>
@@ -451,99 +329,46 @@
 
             <!-- Additional Reports Section -->
             <div class="row mt-4">
-                <!-- Scheduler Success Rates -->
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="fw-semibold mb-0">
-                                <i class="bi bi-calendar-check me-2"></i>Scheduler Success Rates
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="chart-container" style="height: 300px;">
-                                <canvas id="schedulerChart"></canvas>
-                            </div>
-                            
-                            <div class="mt-3">
-                                <div class="metric-item">
-                                    <span class="metric-label">Successful Executions</span>
-                                    <span class="metric-value text-success">847 (94.2%)</span>
-                                </div>
-                                
-                                <div class="metric-item">
-                                    <span class="metric-label">Failed Executions</span>
-                                    <span class="metric-value text-danger">23 (2.6%)</span>
-                                </div>
-                                
-                                <div class="metric-item">
-                                    <span class="metric-label">Skipped/Paused</span>
-                                    <span class="metric-value text-warning">29 (3.2%)</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- OCR Error Samples -->
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h6 class="fw-semibold mb-0">
-                                <i class="bi bi-exclamation-triangle me-2"></i>OCR Error Samples
-                            </h6>
-                            <button class="btn btn-outline-primary btn-sm" id="viewAllErrorsBtn">
-                                View All
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <div class="error-sample">
-                                <div class="d-flex gap-3">
-                                    <img src="/placeholder.svg?height=80&width=80&text=Blurry+Image" 
-                                        alt="Error Sample" class="error-image">
-                                    <div class="flex-grow-1">
-                                        <div class="fw-semibold">Low Image Quality</div>
-                                        <small class="text-muted">product_image_001.jpg</small>
-                                        <p class="mb-2 small">Image resolution too low for accurate text recognition</p>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn btn-outline-primary btn-sm">
-                                                <i class="bi bi-arrow-clockwise me-1"></i> Retry
-                                            </button>
-                                            <button class="btn btn-outline-secondary btn-sm">
-                                                <i class="bi bi-pencil me-1"></i> Manual Edit
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                @if ($faultyProducts->count() > 0)
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="fw-semibold mb-0">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>OCR Error Samples
+                                </h6>
+                                <a href="{{ route('panel.faulty-translations') }}" class="btn btn-outline-primary btn-sm" id="viewAllErrorsBtn">
+                                    View All
+                                </a>
                             </div>
-                            
-                            <div class="error-sample">
-                                <div class="d-flex gap-3">
-                                    <img src="/placeholder.svg?height=80&width=80&text=Complex+Layout" 
-                                        alt="Error Sample" class="error-image">
-                                    <div class="flex-grow-1">
-                                        <div class="fw-semibold">Complex Layout</div>
-                                        <small class="text-muted">product_image_045.jpg</small>
-                                        <p class="mb-2 small">Multiple text regions with overlapping elements</p>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn btn-outline-primary btn-sm">
-                                                <i class="bi bi-arrow-clockwise me-1"></i> Retry
-                                            </button>
-                                            <button class="btn btn-outline-secondary btn-sm">
-                                                <i class="bi bi-pencil me-1"></i> Manual Edit
-                                            </button>
+                            <div class="card-body">
+                                @foreach ($faultyProducts as $faultyProduct)
+                                    <div class="error-sample">
+                                        <div class="d-flex gap-3">
+                                            <img src="{{ asset('storage/' . $faultyProduct->product->image) }}" 
+                                                alt="Error Sample" class="error-image">
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold">{{ $faultyProduct->product->name }}</div>
+                                                <small class="text-muted">{{ $faultyProduct->product->image }}</small>
+                                                <p class="mb-2 small">{{ $faultyProduct->description }}</p>
+                                                <div class="d-flex gap-2">
+                                                    <a href="{{ route('panel.template-editor', $faultyProduct->product->id) }}" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-arrow-clockwise me-1"></i> Retry
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </div>                            
+                                @endforeach
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        Showing {{ $translationErrorsCount }} of {{ $productCount }} failed OCR attempts
+                                    </small>
                                 </div>
-                            </div>
-                            
-                            <div class="text-center mt-3">
-                                <small class="text-muted">
-                                    Showing 2 of 23 failed OCR attempts
-                                </small>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -556,5 +381,10 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.monthlyTranslationCounts = @json(array_values($getMonthlyTranslationCounts));
+        window.categoryStats = @json($getTopCategoriesStats);
+        window.hourlyActivityHeatmap = @json(array_values($getHourlyActivityHeatmap));
+    </script>
     <script src="{{ asset('panel-assets/js/statistics-reports.js') }}"></script>
 @endsection
