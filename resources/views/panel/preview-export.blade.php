@@ -141,54 +141,82 @@
             background-color: #5a6268;
         }
         @media print {
-    body * {
-        visibility: hidden;
-    }
-    #printArea, #printArea * {
-        visibility: visible;
-    }
-    #printArea {
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-}
+            body * {
+                visibility: hidden;
+            }
+            #printArea, #printArea * {
+                visibility: visible;
+            }
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+        }
 
-#printArea {
-    width: 210mm;
-    min-height: 297mm;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5mm;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-    justify-content: space-between; /* Etiketler arası boşluk */
-}
+        #printArea {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5mm;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            justify-content: space-between; /* Etiketler arası boşluk */
+        }
 
-.label-item {
-    width: 60mm;
-    height: 30mm;
-    border: 1px dashed #ccc;
-    box-sizing: border-box;
-    overflow: hidden;
-    page-break-inside: avoid;
-    display: flex;
-    align-items: stretch;
-    justify-content: stretch;
-    padding: 0;
-}
+        .label-item {
+            width: 60mm;
+            height: 30mm;
+            border: 1px dashed #ccc;
+            box-sizing: border-box;
+            overflow: hidden;
+            page-break-inside: avoid;
+            display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+            padding: 0;
+        }
 
-.label-content {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    padding: 2mm;
-    box-sizing: border-box;
-    text-align: left;
-    word-break: break-word;
-    display: block;
-}
+        .label-content {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            padding: 2mm;
+            box-sizing: border-box;
+            text-align: left;
+            word-break: break-word;
+            display: block;
+        }
+
+        @media print {
+            body.thermal-mode {
+                width: 58mm;
+                height: auto;
+                margin: 0;
+                padding: 0;
+            }
+
+            .thermal-label {
+                width: 58mm;
+                height: 30mm;
+                page-break-after: always;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2mm;
+                box-sizing: border-box;
+            }
+
+            .thermal-content {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                word-break: break-word;
+                text-align: left;
+            }
+        }
         
     </style>
 @endsection
@@ -398,6 +426,12 @@
                                     <div class="fw-semibold">Print</div>
                                     <small class="text-muted">Direct Print</small>
                                 </button>
+
+                                <button class="download-btn" id="printThermalButton" type="button" data-bs-toggle="modal" data-bs-target="#printThermalOptionsModal">
+                                    <i class="bi bi-printer-fill text-warning"></i>
+                                    <div class="fw-semibold">Thermal Print</div>
+                                    <small class="text-muted">Direct Print</small>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -576,18 +610,46 @@
                     <div class="mb-3">
                         <label class="form-label">Label Width (mm)</label>
                         <input type="number" class="form-control" id="labelWidth" value="60" min="10" step="1">
-                        <small class="text-muted">Standart genişlik 60mm’dir.</small>
+                        <small class="text-muted">Standart genişlik 60mm'dir.</small>
                     </div>
                 
                     <div class="mb-3">
                         <label class="form-label">Label Height (mm)</label>
                         <input type="number" class="form-control" id="labelHeight" value="30" min="10" step="1">
-                        <small class="text-muted">Standart yükseklik 30mm’dir.</small>
+                        <small class="text-muted">Standart yükseklik 30mm'dir.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelPrint" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmPrint">Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thermal Print Options Modal -->
+    <div class="modal fade" id="printThermalOptionsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title text-dark">Thermal Printer Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Label Count</label>
+                        <input type="number" class="form-control" id="thermalPrintCount" value="1" min="1" step="1">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Font Size (pt)</label>
+                        <input type="number" class="form-control" id="thermalFontSize" value="4" min="4" max="20">
+                        <small class="text-muted">Label font size.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="confirmPrint">Print</button>
+                    <button type="button" class="btn btn-warning" id="confirmThermalPrint">Print</button>
                 </div>
             </div>
         </div>
@@ -811,6 +873,15 @@
                     // Butonu eski haline getir
                     downloadSvgBtn.disabled = false;
                     downloadSvgBtn.innerHTML = originalContent;
+                });
+            }
+
+            const printOptionsModal = document.getElementById('printOptionsModal');
+            if (printOptionsModal) {
+                printOptionsModal.addEventListener('hidden.bs.modal', function () {
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
                 });
             }
         });

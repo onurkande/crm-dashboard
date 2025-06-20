@@ -274,4 +274,17 @@ class Product extends Model
 
         return $hourlyActivity;
     }
+
+
+    /**
+     * Get the count of products created by the authenticated user in the last month
+     *
+     * @return int Count of products created in last month
+     */
+    public function getLastMonthProductCount()
+    {
+        return self::where('user_id', auth()->id())
+            ->where('created_at', '>=', now()->subMonth())
+            ->count();
+    }
 } 

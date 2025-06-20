@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Services\TranslateService;
 use App\Exports\ProductsExport;
 use Maatwebsite\Excel\Facades\Excel;
-
+use App\Models\UserLanguage;
 class ProductController extends Controller
 {
     protected $visionService;
@@ -98,7 +98,8 @@ class ProductController extends Controller
     public function create()
     {
         $categories = ProductCategory::all();
-        return view('panel.add-product', compact('categories'));
+        $userLanguages = UserLanguage::where('user_id', auth()->id())->get();
+        return view('panel.add-product', compact('categories', 'userLanguages'));
     }
 
     public function store(Request $request)

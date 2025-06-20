@@ -2,10 +2,11 @@
     <div class="sidebar-header">
         <span class="sidebar-brand">🏷️ labeltranslate</span>
         <button class="sidebar-toggle" id="sidebarToggle">
-            <i class="bi bi-chevron-left"></i>
+            <!--<i class="bi bi-chevron-left"></i>-->
         </button>
         <button class="mobile-close-btn" id="mobileCloseBtn">
-            <i class="bi bi-x"></i>
+            <i class="bi bi-chevron-left"></i>
+            <!--<i class="bi bi-x"></i>-->
         </button>
     </div>
     

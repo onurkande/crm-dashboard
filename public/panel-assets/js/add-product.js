@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePage();
     setupEventListeners();
     setupFormValidation();
-    setupImageUpload();
     setupCategorySelection();
     setupLanguageSelection();
     setupChat();
@@ -130,129 +129,7 @@ function validateForm() {
     return isValid;
 }
 
-function collectFormData() {
-    const formData = {
-        name: document.getElementById('productName').value,
-        sku: document.getElementById('productSku').value,
-        description: document.getElementById('productDescription').value,
-        category: document.getElementById('selectedCategory').value,
-        barcodeType: document.getElementById('barcodeType').value,
-        barcodeContent: document.getElementById('barcodeContent').value,
-        images: Array.from(document.querySelectorAll('.image-preview')).map(preview => preview.dataset.src),
-        languages: Array.from(document.querySelectorAll('.language-checkbox input:checked')).map(cb => cb.id.replace('lang_', '')),
-        autoGenerateLabels: document.getElementById('autoGenerateLabels').checked,
-        enableNotifications: document.getElementById('enableNotifications').checked,
-        saveAsDraft: document.getElementById('saveAsDraft').checked
-    };
-    
-    return formData;
-}
 
-function saveProduct(formData, isAddNew = false) {
-    // Show loading state
-    const submitBtn = isAddNew ? document.getElementById('saveAndAddNew') : document.getElementById('saveAndReturn');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Saving...';
-    submitBtn.disabled = true;
-    
-    // Simulate API call
-    setTimeout(() => {
-        console.log('Product data:', formData);
-        
-        // Reset button state
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-        
-        // Show success message
-        showToast('Product saved successfully!', 'success');
-        
-        if (isAddNew) {
-            // Reset form for new product
-            resetForm();
-            showToast('Ready to add another product', 'info');
-        } else {
-            // Redirect to products list
-            showToast('Redirecting to products list...', 'info');
-            setTimeout(() => {
-                // window.location.href = 'products.html';
-            }, 1500);
-        }
-    }, 2000);
-}
-
-function setupImageUpload() {
-    const uploadArea = document.getElementById('imageUploadArea');
-    const imageInput = document.getElementById('imageInput');
-    const browseBtn = document.getElementById('browseImages');
-    
-    // Browse button click
-    browseBtn.addEventListener('click', () => imageInput.click());
-    uploadArea.addEventListener('click', () => imageInput.click());
-    
-    // File input change
-    imageInput.addEventListener('change', handleImageSelection);
-    
-    // Drag and drop
-    uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.classList.add('dragover');
-    });
-    
-    uploadArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-    });
-    
-    uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-        
-        const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
-        handleImageFiles(files);
-    });
-}
-
-function handleImageSelection(e) {
-    const files = Array.from(e.target.files);
-    handleImageFiles(files);
-}
-
-function handleImageFiles(files) {
-    const container = document.getElementById('imagePreviewContainer');
-    
-    files.forEach(file => {
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-            showToast(`File ${file.name} is too large. Maximum size is 5MB.`, 'warning');
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            addImagePreview(e.target.result, file.name);
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-function addImagePreview(src, filename) {
-    const container = document.getElementById('imagePreviewContainer');
-    
-    const preview = document.createElement('div');
-    preview.className = 'image-preview';
-    preview.dataset.src = src;
-    preview.innerHTML = `
-        <img src="${src}" alt="${filename}">
-        <button type="button" class="remove-btn" onclick="removeImagePreview(this)">
-            <i class="bi bi-x"></i>
-        </button>
-    `;
-    
-    container.appendChild(preview);
-}
-
-function removeImagePreview(btn) {
-    btn.closest('.image-preview').remove();
-}
 
 function setupCategorySelection() {
     const categoryItems = document.querySelectorAll('.category-item');
@@ -493,7 +370,6 @@ function previewProduct() {
 function resetForm() {
     document.getElementById('productForm').reset();
     document.getElementById('selectedCategory').value = '';
-    document.getElementById('imagePreviewContainer').innerHTML = '';
     document.getElementById('barcodePreview').innerHTML = `
         <i class="bi bi-upc-scan text-muted" style="font-size: 2rem;"></i>
         <p class="text-muted mb-0 mt-2">Barcode preview will appear here</p>

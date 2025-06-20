@@ -28,11 +28,25 @@
                     <button class="btn btn-outline-secondary" id="resetAllBtn">
                         <i class="bi bi-arrow-clockwise me-1"></i> Reset All
                     </button>
-                    <button class="btn btn-primary" id="saveAllBtn">
-                        <i class="bi bi-check-circle me-1"></i> Save Changes
-                    </button>
                 </div>
             </div>
+
+              <!-- Flash Messages -->
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
             <!-- Settings Tabs -->
             <div class="settings-tabs">
@@ -65,46 +79,79 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <form id="profileForm">
+                                <form id="profileForm" action="{{ route('panel.account-settings.update') }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="firstName" value="John" required>
+                                            <input type="text" class="form-control" id="firstName" name="name" value="{{ $user->name }}" required>
+                                            @error('name')
+                                                <div class="alert alert-danger">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         <div class="col-md-6">
                                             <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="lastName" value="Smith" required>
+                                            <input type="text" class="form-control" id="lastName" name="surname" value="{{ $user->surname }}" required>
+                                            @error('surname')
+                                                <div class="alert alert-danger">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         <div class="col-12">
                                             <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                            <input type="email" class="form-control" id="email" value="john.smith@company.com" required>
-                                            <div class="form-text">
-                                                <i class="bi bi-info-circle me-1"></i>
-                                                Changing your email will require verification
-                                            </div>
+                                            <input type="email" class="form-control" id="email" name="email" value="{{ $user->email }}" required>
+                                            @error('email')
+                                                <div class="alert alert-danger">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         <div class="col-md-6">
                                             <label for="phone" class="form-label">Phone Number</label>
-                                            <input type="tel" class="form-control" id="phone" value="+1 (555) 123-4567">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="timezone" class="form-label">Timezone</label>
-                                            <select class="form-select" id="timezone">
-                                                <option value="UTC-5">Eastern Time (UTC-5)</option>
-                                                <option value="UTC-6">Central Time (UTC-6)</option>
-                                                <option value="UTC-7">Mountain Time (UTC-7)</option>
-                                                <option value="UTC-8">Pacific Time (UTC-8)</option>
-                                                <option value="UTC+0">UTC (GMT)</option>
-                                                <option value="UTC+1">Central European Time (UTC+1)</option>
-                                            </select>
+                                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ $user->phone }}">
+                                            @error('phone')
+                                                <div class="alert alert-danger">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         <div class="col-12">
-                                            <label for="company" class="form-label">Company/Organization</label>
-                                            <input type="text" class="form-control" id="company" value="Acme Corporation">
+                                            <label for="company" class="form-label">Company</label>
+                                            <input type="text" class="form-control" id="company" name="company_name" required value="{{ $user->company_name }}">
+                                            @error('company_name')
+                                                <div class="alert alert-danger">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="producer" class="form-label">Producer <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="producer" name="producer_name" placeholder="Enter producer name" required value="{{ $user->producer_name }}">
+                                            <small class="form-text text-muted">Required - Name of the product producer</small>
+                                            @error('producer_name')
+                                                <div class="alert alert-danger">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="importer" class="form-label">Importer <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="importer" name="importer_name" placeholder="Enter importer name" required value="{{ $user->importer_name }}">
+                                            <small class="form-text text-muted">Required - Name of the product importer</small>
+                                            @error('importer_name')
+                                                <div class="alert alert-danger">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="address" class="form-label">Address</label>
+                                            <textarea class="form-control" id="address" name="address" rows="2" placeholder="Enter your address">{{ $user->address }}</textarea>
+                                            @error('address')
+                                                <div class="alert alert-danger">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         <div class="col-12">
                                             <label for="bio" class="form-label">Bio</label>
-                                            <textarea class="form-control" id="bio" rows="3" placeholder="Tell us about yourself...">Label management specialist with 5+ years of experience in product packaging and multilingual content.</textarea>
+                                            <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="Tell us about yourself...">{{$user->bio}}</textarea>
+                                            @error('bio')
+                                                <div class="alert alert-danger">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-save me-1"></i>Save Changes
+                                            </button>
                                         </div>
                                     </div>
                                 </form>
@@ -120,55 +167,79 @@
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="primaryLanguage" class="form-label">Primary Language</label>
-                                        <select class="form-select" id="primaryLanguage">
-                                            <option value="en" selected>🇺🇸 English</option>
-                                            <option value="es">🇪🇸 Español</option>
-                                            <option value="fr">🇫🇷 Français</option>
-                                            <option value="de">🇩🇪 Deutsch</option>
-                                            <option value="tr">🇹🇷 Türkçe</option>
-                                            <option value="it">🇮🇹 Italiano</option>
-                                            <option value="pt">🇵🇹 Português</option>
-                                            <option value="ja">🇯🇵 日本語</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="dateFormat" class="form-label">Date Format</label>
-                                        <select class="form-select" id="dateFormat">
-                                            <option value="MM/DD/YYYY" selected>MM/DD/YYYY (US)</option>
-                                            <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>
-                                            <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
-                                            <option value="DD.MM.YYYY">DD.MM.YYYY (German)</option>
-                                        </select>
-                                    </div>
                                     <div class="col-12">
-                                        <label class="form-label">Secondary Languages (for OCR & Translation)</label>
-                                        <div class="row g-2">
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="lang_es" checked>
-                                                    <label class="form-check-label" for="lang_es">🇪🇸 Spanish</label>
+                                        <label class="form-label">Your Custom Languages</label>
+                                        <div class="language-list mb-3" id="userLanguagesList">
+                                            @if($user->userLanguages && $user->userLanguages->count() > 0)
+                                                @foreach($user->userLanguages as $language)
+                                                    <div class="badge bg-primary me-2 mb-2 p-2 user-language-item" data-language-id="{{ $language->id }}">
+                                                        <strong>{{ $language->language_code }}</strong>: {{ $language->language_name }}
+                                                        <a href="{{ route('panel.user-languages.destroy', $language->id) }}" type="button" class="btn-close btn-close-white ms-2 remove-language-btn" 
+                                                            data-language-id="{{ $language->id }}"
+                                                            aria-label="Remove"></a>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <p class="text-muted">No custom languages added yet.</p>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label">Default Available Languages</label>
+                                        <div class="default-languages mb-3">
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇺🇸 English</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇧🇬 Bulgarian</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇷🇴 Romanian</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇷🇺 Russian</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇹🇷 Turkish</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇯🇵 Japanese</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇰🇷 Korean</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇸🇦 Arabic</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇫🇷 French</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇮🇹 Italian</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇩🇪 German</div>
+                                            <div class="badge bg-secondary me-2 mb-2 p-2">🇵🇹 Portuguese</div>
+                                        </div>
+                                        <small class="text-muted">These languages are available by default and don't need to be added manually.</small>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <hr class="my-3">
+                                        <label class="form-label">Add New Custom Language</label>
+                                        <form id="addLanguageForm" action="{{ route('panel.user-languages.store') }}" method="POST">
+                                            @csrf
+                                            <div class="row g-2">
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" id="languageCode" name="language_code" 
+                                                           placeholder="Language Code (e.g., ce)" maxlength="10" required>
+                                                    <small class="text-muted">ISO language code</small>
+                                                    @error('language_code')
+                                                        <div class="alert alert-danger">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" class="form-control" id="languageName" name="language_name" 
+                                                           placeholder="Language Name (e.g., Chechen)" maxlength="100" required>
+                                                    <small class="text-muted">Full language name</small>
+                                                    @error('language_name')
+                                                        <div class="alert alert-danger">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <button type="submit" class="btn btn-primary w-100" id="addLanguageBtn">
+                                                        <i class="bi bi-plus-lg"></i> Add
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="lang_fr" checked>
-                                                    <label class="form-check-label" for="lang_fr">🇫🇷 French</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="lang_de">
-                                                    <label class="form-check-label" for="lang_de">🇩🇪 German</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="lang_it">
-                                                    <label class="form-check-label" for="lang_it">🇮🇹 Italian</label>
-                                                </div>
-                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Add custom languages that are not in the default list. These languages will be used for OCR and translation features. 
+                                            Please use valid ISO language codes (e.g., "ce" for Chechen, "hy" for Armenian).
                                         </div>
                                     </div>
                                 </div>
@@ -186,15 +257,34 @@
                                 </h5>
                             </div>
                             <div class="card-body text-center">
-                                <img src="/placeholder.svg?height=120&width=120&text=JS" 
-                                    alt="Profile Picture" class="profile-avatar mb-3" id="profileImage">
-                                
-                                <div class="upload-area" id="uploadArea">
-                                    <i class="bi bi-cloud-upload display-6 text-muted"></i>
-                                    <p class="mb-2">Click or drag to upload new photo</p>
-                                    <small class="text-muted">Max file size: 5MB<br>Formats: JPG, PNG, GIF</small>
-                                    <input type="file" class="d-none" id="profileImageInput" accept="image/*">
+                                <div class="row">
+                                    @if($user->profile_photo)
+                                        <div class="col-6">
+                                            <p class="text-muted mb-2">Current Profile Picture:</p>
+                                            <img src="{{ asset('storage/' . $user->profile_photo) }}" 
+                                                alt="Current Profile Picture" class="profile-avatar mb-3">
+                                            <small class="d-block text-muted">Last updated: {{ $user->updated_at->format('M d, Y') }}</small>
+                                        </div>
+                                    @endif
+                                    <div class="col-6">
+                                        <img src="/placeholder.svg?height=120&width=120&text=JS" 
+                                        alt="New Profile Picture" class="profile-avatar mb-3" id="profileImage">
+                                    </div>
                                 </div>
+                                
+                                <form action="{{ route('panel.account-settings.updateImage') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="upload-area" id="uploadArea">
+                                        <i class="bi bi-cloud-upload display-6 text-muted"></i>
+                                        <p class="mb-2">Click or drag to upload new photo</p>
+                                        <small class="text-muted">Max file size: 5MB<br>Formats: JPG, PNG, GIF</small>
+                                        <input type="file" class="d-none" id="profileImageInput" accept="image/jpeg,image/png,image/gif,image/webp" required name="profile_photo">
+                                        @error('profile_photo')
+                                            <div class="alert alert-danger">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    
                                 
                                 <div class="d-flex gap-2 mt-3">
                                     <button class="btn btn-outline-primary btn-sm flex-fill" id="changePhotoBtn">
@@ -204,6 +294,10 @@
                                         <i class="bi bi-trash me-1"></i>Remove
                                     </button>
                                 </div>
+                                <button type="submit" class="btn btn-primary mt-3">
+                                    <i class="bi bi-save me-1"></i>Save Changes
+                                </button>
+                            </form>
                             </div>
                         </div>
 
@@ -216,12 +310,12 @@
                             </div>
                             <div class="card-body">
                                 <div class="text-center mb-3">
-                                    <span class="subscription-badge">Professional Plan</span>
+                                    <span class="subscription-badge">{{$user->user_type}} Plan</span>
                                 </div>
                                 
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="text-muted">Status:</span>
-                                    <span class="badge bg-success">Active</span>
+                                    <span class="badge bg-success">{{$user->status}}</span>
                                 </div>
                                 
                                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -237,7 +331,7 @@
                                 <div class="progress mb-3" style="height: 8px;">
                                     <div class="progress-bar" style="width: 65%"></div>
                                 </div>
-                                <small class="text-muted">8,924 / 15,000 labels used this month</small>
+                                <small class="text-muted">{{$user->getLastMonthProductCount()}} / 15,000 labels used this month</small>
                                 
                                 <div class="d-grid gap-2 mt-3">
                                     <button class="btn btn-outline-primary btn-sm">
@@ -285,7 +379,7 @@
             <div id="securityTab" class="tab-content d-none">
                 <div class="row g-4">
                     <!-- Password Change -->
-                    <div class="col-lg-6">
+                    <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
                                 <h5 class="mb-0">
@@ -293,21 +387,27 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <form id="passwordForm">
+                                <form id="passwordForm" action="{{ route('panel.account-settings.updatePassword') }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
                                     <div class="mb-3">
                                         <label for="currentPassword" class="form-label">Current Password <span class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <input type="password" class="form-control" id="currentPassword" required>
+                                            <input type="password" class="form-control" id="currentPassword" placeholder="Current Password" required name="current_password">
+                                           
                                             <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
                                                 <i class="bi bi-eye"></i>
                                             </button>
                                         </div>
+                                        @error('current_password')
+                                            <div class="alert alert-danger">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label for="newPassword" class="form-label">New Password <span class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <input type="password" class="form-control" id="newPassword" required>
+                                            <input type="password" class="form-control" id="newPassword" placeholder="New Password" required name="new_password">
                                             <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
                                                 <i class="bi bi-eye"></i>
                                             </button>
@@ -315,23 +415,29 @@
                                         <div class="form-text">
                                             Password must be at least 8 characters with letters, numbers and symbols
                                         </div>
+                                        @error('new_password')
+                                            <div class="alert alert-danger">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label for="confirmPassword" class="form-label">Confirm New Password <span class="text-danger">*</span></label>
                                         <div class="input-group">
-                                            <input type="password" class="form-control" id="confirmPassword" required>
+                                            <input type="password" class="form-control" id="confirmPassword" required name="new_password_confirmation">
                                             <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
                                                 <i class="bi bi-eye"></i>
                                             </button>
                                         </div>
+                                        @error('confirm_password')
+                                            <div class="alert alert-danger">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     
                                     <!-- Password Strength Indicator -->
                                     <div class="mb-3">
                                         <label class="form-label">Password Strength</label>
                                         <div class="progress" style="height: 6px;">
-                                            <div class="progress-bar bg-danger" id="passwordStrength" style="width: 25%"></div>
+                                            <div class="progress-bar bg-danger" id="passwordStrength"></div>
                                         </div>
                                         <small class="text-muted" id="passwordStrengthText">Weak</small>
                                     </div>
@@ -404,7 +510,7 @@
                     </div>
 
                     <!-- Active Sessions -->
-                    <div class="col-lg-6">
+                    <!--<div class="col-lg-6">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
@@ -415,7 +521,6 @@
                                 </button>
                             </div>
                             <div class="card-body">
-                                <!-- Current Session -->
                                 <div class="session-item current">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div class="flex-grow-1">
@@ -440,7 +545,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Other Sessions -->
+                                
                                 <div class="session-item">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div class="flex-grow-1">
@@ -489,7 +594,7 @@
                             </div>
                         </div>
 
-                        <!-- Login History -->
+                        
                         <div class="card mt-4">
                             <div class="card-header">
                                 <h5 class="mb-0">
@@ -555,7 +660,7 @@
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -1036,66 +1141,6 @@
                 <div class="row g-4">
                     <!-- API & Integrations -->
                     <div class="col-lg-8">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-code-slash me-2"></i>API Keys & Integrations
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    <strong>Important:</strong> Keep your API keys secure and never share them publicly.
-                                </div>
-                                
-                                <div class="api-key-item border rounded p-3 mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1">Production API Key</h6>
-                                            <p class="text-muted small mb-2">Created on Dec 1, 2024</p>
-                                            <code class="bg-light p-2 rounded">sk_live_••••••••••••••••••••••••••••••••••••••••</code>
-                                        </div>
-                                        <div class="dropdown">
-                                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                                                Actions
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="#">Copy Key</a></li>
-                                                <li><a class="dropdown-item" href="#">Regenerate</a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="#">Revoke</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="api-key-item border rounded p-3 mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1">Test API Key</h6>
-                                            <p class="text-muted small mb-2">Created on Nov 15, 2024</p>
-                                            <code class="bg-light p-2 rounded">sk_test_••••••••••••••••••••••••••••••••••••••••</code>
-                                        </div>
-                                        <div class="dropdown">
-                                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                                                Actions
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="#">Copy Key</a></li>
-                                                <li><a class="dropdown-item" href="#">Regenerate</a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="#">Revoke</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <button class="btn btn-primary" id="createApiKeyBtn">
-                                    <i class="bi bi-plus-circle me-1"></i>Create New API Key
-                                </button>
-                            </div>
-                        </div>
-
                         <!-- Data Export & Import -->
                         <div class="card mt-4">
                             <div class="card-header">
@@ -1138,41 +1183,6 @@
 
                     <!-- Danger Zone -->
                     <div class="col-lg-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6 class="mb-0">
-                                    <i class="bi bi-shield-exclamation me-2"></i>Account Security
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <h6 class="fw-semibold">Account Status</h6>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <span class="badge bg-success me-2">Active</span>
-                                        <span class="text-muted small">Account in good standing</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h6 class="fw-semibold">Last Security Audit</h6>
-                                    <p class="text-muted small mb-2">December 1, 2024</p>
-                                    <button class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-shield-check me-1"></i>Run Security Check
-                                    </button>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h6 class="fw-semibold">Data Retention</h6>
-                                    <p class="text-muted small">Data older than 2 years is automatically archived</p>
-                                    <select class="form-select form-select-sm">
-                                        <option value="1">1 year</option>
-                                        <option value="2" selected>2 years</option>
-                                        <option value="5">5 years</option>
-                                        <option value="never">Never delete</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Account Actions -->
                         <div class="danger-zone mt-4">
@@ -1312,6 +1322,16 @@
 @endsection 
 
 @section('js')
+    <script>
+        window.activeTabFromSession = "{{ session('active_tab') }}";
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('panel-assets/js/account-settings.js') }}"></script>
+    @if(session('active_tab'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showTab('{{ session('active_tab') }}');
+        });
+    </script>
+    @endif
 @endsection

@@ -6,6 +6,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('panel-assets/css/add-product.css') }}">
+    <style>
+        #imageInput {
+            opacity: 0;
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            z-index: 2;
+        }
+    </style>
 @endsection
 
 @section('meta')
@@ -30,6 +39,23 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Flash Messages -->
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
             <!-- Product Form -->
             <form action="{{ route('panel.products.store') }}" method="POST" enctype="multipart/form-data">
@@ -75,6 +101,9 @@
                                     <div class="col-md-6 mb-3">
                                         <label for="sourceLang" class="form-label">
                                             Source Language <span class="text-danger">*</span>
+                                            <button type="button" class="btn btn-sm btn-outline-primary ms-2" data-bs-toggle="modal" data-bs-target="#addLanguageModal">
+                                                <i class="bi bi-plus-lg"></i> Add Language
+                                            </button>
                                         </label>
                                         <select class="form-select" id="sourceLang" name="original_lang" required>
                                             <option value="">Select source language</option>
@@ -89,6 +118,11 @@
                                             <option value="fr">🇫🇷 French</option>
                                             <option value="it">🇮🇹 Italian</option>
                                             <option value="de">🇩🇪 German</option>
+                                            <option value="pt">🇵🇹 Portuguese</option>
+                                            <option disabled style="color: #999; font-weight: bold;">Languages ​​you added yourself</option>
+                                            @foreach ($userLanguages as $language)
+                                                <option value="{{ $language->language_code }}">{{ $language->language_name }}</option>
+                                            @endforeach
                                         </select>
                                         <small class="form-text text-muted">Select the language of your original product text</small>
                                         @error('original_lang')
@@ -149,12 +183,29 @@
                                         <div class="category-tree" id="categoryTree">
                                             @if($categories->count() > 0)
                                             @foreach ($categories as $category)
-                                                <div class="category-item">
+                                                <div class="category-item d-flex justify-content-between align-items-center border rounded p-2 mb-2">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="radio" name="category_id" id="cat_{{ $category->name }}" value="{{ $category->id }}">
                                                         <label class="form-check-label" for="cat_{{ $category->name }}">
                                                             {{ $category->name }}
                                                         </label>
+                                                    </div>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#editCategoryModal" 
+                                                                data-category-id="{{ $category->id }}"
+                                                                data-category-name="{{ $category->name }}"
+                                                                data-category-description="{{ $category->description }}">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#deleteCategoryModal"
+                                                                data-category-id="{{ $category->id }}"
+                                                                data-category-name="{{ $category->name }}">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -212,7 +263,7 @@
                                     <button type="button" class="btn btn-primary" id="browseImages">
                                         <i class="bi bi-folder2-open me-1"></i> Browse Files
                                     </button>
-                                    <input type="file" id="imageInput" accept="image/*" style="display: none;" name="image">
+                                    <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;" name="image">
                                     <small class="d-block mt-2 text-muted">
                                         Supported formats: JPG, PNG, GIF, WebP (Max 5MB)
                                     </small>
@@ -346,6 +397,17 @@
                                             </label>
                                         </div>
                                     </div>
+
+                                    @foreach ($userLanguages as $language)
+                                        <div class="language-checkbox" data-lang="{{ $language->language_code }}">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="target_lang" id="lang_{{ $language->language_code }}" value="{{ $language->language_code }}">
+                                                <label class="form-check-label" for="lang_{{ $language->language_code }}">
+                                                    {{ $language->language_code }} {{ $language->language_name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
                                 
                                 <div class="mt-3">
@@ -400,7 +462,7 @@
                             <input type="text" class="form-control" id="categoryName" name="name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="parentCategory" class="form-label">Description </label>
+                            <label for="categoryDescription" class="form-label">Description </label>
                             <textarea class="form-control" id="categoryDescription" rows="4" placeholder="Enter category description" name="description"></textarea>
                             <small class="form-text text-muted">Optional - Provide detailed category information</small>
                         </div>
@@ -410,6 +472,105 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" form="addCategoryForm">Save Category</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editCategoryForm" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">   
+                        <div class="mb-3">
+                            <label for="editCategoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="editCategoryName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCategoryDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editCategoryDescription" rows="4" placeholder="Enter category description" name="description"></textarea>
+                            <small class="text-muted">Optional - Provide detailed category information</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="editCategoryForm">Update Category</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Category Modal -->
+    <div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger" id="deleteCategoryModalLabel">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Delete Category
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <strong>Warning:</strong> This action cannot be undone. The category will be permanently deleted.
+                    </div>
+                    <p>Are you sure you want to delete the category "<strong id="deleteCategoryName"></strong>"?</p>
+                    <form id="deleteCategoryForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" form="deleteCategoryForm">
+                        <i class="bi bi-trash me-1"></i>Delete Category
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Language Modal -->
+    <div class="modal fade" id="addLanguageModal" tabindex="-1" aria-labelledby="addLanguageModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addLanguageModalLabel">Add New Language</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('panel.user-languages.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="modalLanguageCode" class="form-label">Language Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="modalLanguageCode" name="language_code" maxlength="10" required placeholder="e.g. ce">
+                            <small class="text-muted">ISO language code</small>
+                            @error('language_code')
+                                <div class="alert alert-danger">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalLanguageName" class="form-label">Language Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="modalLanguageName" name="language_name" maxlength="100" required placeholder="e.g. Chechen">
+                            <small class="text-muted">Full language name</small>
+                            @error('language_name')
+                                <div class="alert alert-danger">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Language</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -447,13 +608,21 @@
             const previewContainer = document.getElementById('imagePreviewContainer');
 
             // Dosya seçme butonuna tıklama
-            browseBtn.addEventListener('click', function() {
-                imageInput.click();
-            });
+            ['click', 'touchstart'].forEach(evt =>
+                browseBtn.addEventListener(evt, () => imageInput.click())
+            );
 
             // Yükleme alanına tıklama
             uploadArea.addEventListener('click', function() {
                 imageInput.click();
+            });
+
+            imageInput.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            imageInput.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
             });
 
             // Dosya seçildiğinde
@@ -488,6 +657,11 @@
             function handleFile(file) {
                 if (!file.type.startsWith('image/')) {
                     alert('Lütfen sadece resim dosyası yükleyin.');
+                    return;
+                }
+
+                if (!file.type.match(/^image\/(jpeg|png|gif|webp|heic)$/)) {
+                    alert('Yalnızca JPG, PNG, GIF, WebP ve HEIC resimlerini yükleyebilirsiniz.');
                     return;
                 }
 
@@ -539,6 +713,50 @@
                 radioInput.addEventListener('click', function(e) {
                     e.stopPropagation();
                 });
+            });
+
+            // Optionally, you can clear modal fields when closed
+            var addLanguageModal = document.getElementById('addLanguageModal');
+            addLanguageModal.addEventListener('hidden.bs.modal', function () {
+                document.getElementById('modalLanguageCode').value = '';
+                document.getElementById('modalLanguageName').value = '';
+            });
+
+            // Edit Category Modal functionality
+            var editCategoryModal = document.getElementById('editCategoryModal');
+            editCategoryModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var categoryId = button.getAttribute('data-category-id');
+                var categoryName = button.getAttribute('data-category-name');
+                var categoryDescription = button.getAttribute('data-category-description');
+                
+                var form = document.getElementById('editCategoryForm');
+                form.action = '/panel/categories/' + categoryId;
+                
+                document.getElementById('editCategoryName').value = categoryName;
+                document.getElementById('editCategoryDescription').value = categoryDescription || '';
+            });
+
+            // Delete Category Modal functionality
+            var deleteCategoryModal = document.getElementById('deleteCategoryModal');
+            deleteCategoryModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var categoryId = button.getAttribute('data-category-id');
+                var categoryName = button.getAttribute('data-category-name');
+                
+                var form = document.getElementById('deleteCategoryForm');
+                form.action = '/panel/categories/' + categoryId;
+                
+                document.getElementById('deleteCategoryName').textContent = categoryName;
+            });
+
+            // Auto-dismiss flash messages after 5 seconds
+            const flashMessages = document.querySelectorAll('.alert');
+            flashMessages.forEach(function(message) {
+                setTimeout(function() {
+                    const alert = new bootstrap.Alert(message);
+                    alert.close();
+                }, 5000); // 5 seconds
             });
         });
     </script>

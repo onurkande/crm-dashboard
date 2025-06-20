@@ -7,6 +7,8 @@ use App\Http\Controllers\Panel\TemplateEditorController;
 use App\Http\Controllers\Panel\PreviewExportController;
 use App\Http\Controllers\Panel\IndexController;
 use App\Http\Controllers\Panel\StatisticsReportsController;
+use App\Http\Controllers\Panel\AccountSettingController;
+use App\Http\Controllers\Panel\UserLanguageController;
 /*
 |--------------------------------------------------------------------------
 | Admin Panel Routes
@@ -44,6 +46,16 @@ Route::post('/categories', [ProductCategoryController::class, 'store'])->name('c
 Route::put('/categories/{category}', [ProductCategoryController::class, 'update'])->name('categories.update');
 Route::delete('/categories/{category}', [ProductCategoryController::class, 'destroy'])->name('categories.destroy');
 
+// Account Settings Routes
+Route::get('/account-settings', [AccountSettingController::class, 'index'])->name('account-settings');
+Route::put('/account-settings', [AccountSettingController::class, 'update'])->name('account-settings.update');
+Route::put('/account-settings/image', [AccountSettingController::class, 'updateImage'])->name('account-settings.updateImage');
+Route::put('/account-settings/password', [AccountSettingController::class, 'updatePassword'])->name('account-settings.updatePassword');
+
+// User Language Routes
+Route::get('/user-languages', [UserLanguageController::class, 'index'])->name('user-languages.index');
+Route::post('/user-languages', [UserLanguageController::class, 'store'])->name('user-languages.store');
+Route::get('/user-languages/{id}', [UserLanguageController::class, 'destroy'])->name('user-languages.destroy');
 
 Route::get('/statistics-reports', [StatisticsReportsController::class, 'index'])->name('statistics-reports');
 
@@ -51,9 +63,6 @@ Route::get('/label-scheduler', function () {
     return view('panel.label-scheduler');
 })->name('label-scheduler');
 
-Route::get('/account-settings', function () {
-    return view('panel.account-settings');
-})->name('account-settings');
 
 Route::get('/support-help-center', function () {
     return view('panel.support-help-center');

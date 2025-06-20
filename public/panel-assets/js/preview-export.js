@@ -533,7 +533,6 @@ if (printButton) {
     });
 }
 
-// Confirm Print functionality
 document.getElementById('confirmPrint').addEventListener('click', function () {
     const count = parseInt(document.getElementById('printCount').value);
     const width = parseFloat(document.getElementById('labelWidth').value) || 60;
@@ -547,93 +546,181 @@ document.getElementById('confirmPrint').addEventListener('click', function () {
 
     const contentHTML = designFrame.contentDocument.body.innerHTML;
 
-    // Yeni sekme aç
-    const printWindow = window.open('', '_blank');
-    const doc = printWindow.document;
+    // Mobil mi kontrolü
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    doc.write(`
-        <html>
-        <head>
-            <style>
+    if (isMobile) {
+        // --- MOBİL: Aynı sayfada geçici yazdırma alanı ---
+        const printArea = document.createElement('div');
+        printArea.id = 'printArea';
+        printArea.style.display = 'flex';
+        printArea.style.flexWrap = 'wrap';
+        printArea.style.gap = '5mm';
+        printArea.style.width = '210mm';
+        printArea.style.minHeight = '297mm';
+        printArea.style.padding = '0';
+        printArea.style.margin = '0';
+        printArea.style.boxSizing = 'border-box';
+        printArea.style.position = 'absolute';
+        printArea.style.top = '0';
+        printArea.style.left = '0';
+        printArea.style.background = 'white';
+        printArea.style.zIndex = '9999';
+
+        for (let i = 0; i < count; i++) {
+            const label = document.createElement('div');
+            label.className = 'label-item';
+            label.style.width = `${width}mm`;
+            label.style.height = `${height}mm`;
+            label.style.border = '1px dashed #ccc';
+            label.style.boxSizing = 'border-box';
+            label.style.padding = '2mm';
+            label.style.overflow = 'hidden';
+            label.style.display = 'flex';
+            label.style.alignItems = 'stretch';
+            label.style.justifyContent = 'stretch';
+
+            const labelContent = document.createElement('div');
+            labelContent.className = 'label-content';
+            labelContent.style.width = '100%';
+            labelContent.style.height = '100%';
+            labelContent.innerHTML = contentHTML;
+
+            label.appendChild(labelContent);
+            printArea.appendChild(label);
+        }
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('printModal'));
+        modal.hide();
+        
+        // Biraz gecikmeli yazdırma işlemi başlat
+        setTimeout(() => {
+            // DOM’a yazdırma alanı ekle
+            document.body.appendChild(printArea);
+        
+            // Stil ve görünürlük ayarları
+            const style = document.createElement('style');
+            style.textContent = `
                 @media print {
                     body * {
-                        visibility: visible;
+                        visibility: hidden !important;
+                    }
+                    #printArea, #printArea * {
+                        visibility: visible !important;
+                    }
+                    #printArea {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
                     }
                 }
-                body {
-                    width: 210mm;
-                    min-height: 297mm;
-                    margin: 0;
-                    padding: 0;
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 5mm;
-                    font-family: Arial, sans-serif;
-                    box-sizing: border-box;
-                }
-                .label-item {
-                    width: ${width}mm;
-                    height: ${height}mm;
-                    border: 1px dashed #ccc;
-                    box-sizing: border-box;
-                    overflow: hidden;
-                    padding: 2mm;
-                    display: flex;
-                    align-items: stretch;
-                    justify-content: stretch;
-                }
-                .label-content {
-                    width: 100%;
-                    height: 100%;
-                    overflow: hidden;
-                    box-sizing: border-box;
-                    word-break: break-word;
-                }
-            </style>
-        </head>
-        <body>
-    `);
-
-    for (let i = 0; i < count; i++) {
-        doc.write(`
-            <div class="label-item">
-                <div class="label-content">${contentHTML}</div>
-            </div>
-        `);
-    }
-
-    doc.write(`
-        <script>
-            function autoShrinkFont(el, startSize = 14, minSize = 1) {
-                let fontSize = startSize;
-                el.style.fontSize = fontSize + 'pt';
-                while (el.scrollHeight > el.offsetHeight && fontSize > minSize) {
-                    fontSize -= 0.5;
-                    el.style.fontSize = fontSize + 'pt';
-                }
-            }
-            window.onload = function () {
-                const labels = document.querySelectorAll('.label-content');
-                labels.forEach(el => autoShrinkFont(el));
+            `;
+            document.head.appendChild(style);
+        
+            // Yazı küçültme
+            const labels = printArea.querySelectorAll('.label-content');
+            labels.forEach(el => autoShrinkFont(el));
+        
+            // Yazdırma işlemi
+            setTimeout(() => {
                 window.print();
-                // Yazdırma işlemi bitince pencereyi kapat
-    window.onafterprint = function () {
-        window.close();
-    };
+            }, 100); // DOM çizimi bekletilir
+        
+            // Yazdırmadan sonra temizle
+            window.onafterprint = () => {
+                printArea.remove();
+                style.remove();
             };
-        <\/script>
-        </body></html>
-    `);
+        }, 300); 
 
-    doc.close();
+    } else {
+        // --- MASAÜSTÜ: Yeni sekmede yazdırma ---
+        const printWindow = window.open('', '_blank');
+        const doc = printWindow.document;
+
+        doc.write(`
+            <html>
+            <head>
+                <style>
+                    @media print {
+                        body * {
+                            visibility: visible;
+                        }
+                    }
+                    body {
+                        width: 210mm;
+                        min-height: 297mm;
+                        margin: 0;
+                        padding: 0;
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 5mm;
+                        font-family: Arial, sans-serif;
+                        box-sizing: border-box;
+                    }
+                    .label-item {
+                        width: ${width}mm;
+                        height: ${height}mm;
+                        border: 1px dashed #ccc;
+                        box-sizing: border-box;
+                        overflow: hidden;
+                        padding: 2mm;
+                        display: flex;
+                        align-items: stretch;
+                        justify-content: stretch;
+                    }
+                    .label-content {
+                        width: 100%;
+                        height: 100%;
+                        overflow: hidden;
+                        box-sizing: border-box;
+                        word-break: break-word;
+                    }
+                </style>
+            </head>
+            <body>
+        `);
+
+        for (let i = 0; i < count; i++) {
+            doc.write(`
+                <div class="label-item">
+                    <div class="label-content">${contentHTML}</div>
+                </div>
+            `);
+        }
+
+        doc.write(`
+            <script>
+                function autoShrinkFont(el, startSize = 14, minSize = 1) {
+                    let fontSize = startSize;
+                    el.style.fontSize = fontSize + 'pt';
+                    while (el.scrollHeight > el.offsetHeight && fontSize > minSize) {
+                        fontSize -= 0.5;
+                        el.style.fontSize = fontSize + 'pt';
+                    }
+                }
+                window.onload = function () {
+                    const labels = document.querySelectorAll('.label-content');
+                    labels.forEach(el => autoShrinkFont(el));
+                    window.print();
+                };
+                window.onafterprint = function () {
+                    window.close();
+                };
+                window.onbeforeunload = function () {
+                    window.close();
+                };
+            <\/script>
+            </body></html>
+        `);
+
+        doc.close();
+    }
 });
-
 
 /**
  * Yazı sığmıyorsa yazı boyutunu küçültür.
- * @param {HTMLElement} el
- * @param {number} startSize
- * @param {number} minSize
  */
 function autoShrinkFont(el, startSize = 14, minSize = 1) {
     let fontSize = startSize;
@@ -644,6 +731,117 @@ function autoShrinkFont(el, startSize = 14, minSize = 1) {
         el.style.fontSize = fontSize + 'pt';
     }
 }
+
+function shrinkToFit(el, startSize = 12, minSize = 3) {
+    let fontSize = startSize;
+    el.style.fontSize = fontSize + 'pt';
+    el.style.lineHeight = "1.1";
+    el.style.wordBreak = "break-word";
+    el.style.overflow = "hidden";
+
+    // Yazı sığana kadar küçült
+    while ((el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth) && fontSize > minSize) {
+        fontSize -= 0.5;
+        el.style.fontSize = fontSize + 'pt';
+    }
+}
+
+document.getElementById('confirmThermalPrint').addEventListener('click', function () {
+    const count = parseInt(document.getElementById('thermalPrintCount').value) || 1;
+    const fontSize = parseInt(document.getElementById('thermalFontSize').value) || 10;
+
+    const designFrame = document.getElementById('designFrame');
+    if (!designFrame || !designFrame.contentDocument) {
+        alert('designFrame bulunamadı.');
+        return;
+    }
+
+    const contentHTML = designFrame.contentDocument.body.innerHTML;
+    const printWindow = window.open('', '_blank');
+    const doc = printWindow.document;
+
+    doc.write(`
+        <html>
+        <head>
+            <style>
+                @media print {
+                    body {
+                        width: 58mm;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .thermal-label {
+                        width: 58mm;
+                        height: 30mm;
+                        page-break-after: always;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 2mm;
+                        box-sizing: border-box;
+                        overflow: hidden;
+                    }
+                    .thermal-content {
+                        width: 100%;
+                        height: 100%;
+                        box-sizing: border-box;
+                        overflow: hidden;
+                        word-break: break-word;
+                        text-align: left;
+                        font-size: ${fontSize}pt;
+                        line-height: 1.1;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+    `);
+
+    for (let i = 0; i < count; i++) {
+        doc.write(`
+            <div class="thermal-label">
+                <div class="thermal-content">${contentHTML}</div>
+            </div>
+        `);
+    }
+
+    doc.write(`
+        <script>
+            function shrinkToFit(el, startSize = ${fontSize}, minSize = 3) {
+                let fontSize = startSize;
+                el.style.fontSize = fontSize + 'pt';
+                el.style.lineHeight = "1.1";
+                el.style.wordBreak = "break-word";
+                el.style.overflow = "hidden";
+
+                while ((el.scrollHeight > el.offsetHeight || el.scrollWidth > el.offsetWidth) && fontSize > minSize) {
+                    fontSize -= 0.5;
+                    el.style.fontSize = fontSize + 'pt';
+                }
+            }
+
+            window.onload = function () {
+                const labels = document.querySelectorAll('.thermal-content');
+                labels.forEach(el => shrinkToFit(el));
+
+                // Zaman tanı → DOM güncellensin
+                setTimeout(() => {
+                    window.print();
+                }, 200);
+            };
+
+            window.onafterprint = function () {
+                window.close();
+            };
+        <\/script>
+        </body></html>
+    `);
+
+    doc.close();
+});
+
+
+
 
 
 

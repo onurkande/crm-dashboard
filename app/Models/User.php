@@ -25,6 +25,9 @@ class User extends Authenticatable
         'phone',
         'address',
         'company_name',
+        'producer_name',
+        'importer_name',
+        'bio',
         'user_type',
         'profile_photo',
         'status',
@@ -59,5 +62,15 @@ class User extends Authenticatable
     public function categories(): HasMany
     {
         return $this->hasMany(ProductCategory::class);
+    }
+
+    public function userLanguages(): HasMany
+    {
+        return $this->hasMany(UserLanguage::class);
+    }
+
+    public function getLastMonthProductCount()
+    {
+        return $this->products()->where('created_at', '>=', now()->subMonth())->count();
     }
 }

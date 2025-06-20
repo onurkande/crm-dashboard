@@ -23,7 +23,11 @@ function initializeSettings() {
     setLanguage(savedLanguage);
 
     // Show profile tab by default
-    showTab('profile');
+    if (window.activeTabFromSession && window.activeTabFromSession !== "") {
+        showTab(window.activeTabFromSession);
+    } else {
+        showTab('profile');
+    }
 }
 
 function setupEventListeners() {
@@ -76,11 +80,8 @@ function setupEventListeners() {
     });
 
     // Form submissions
-    document.getElementById('profileForm').addEventListener('submit', saveProfileSettings);
-    document.getElementById('passwordForm').addEventListener('submit', changePassword);
 
     // Save buttons
-    document.getElementById('saveAllBtn').addEventListener('click', saveAllSettings);
     document.getElementById('resetAllBtn').addEventListener('click', resetAllSettings);
 
     // Billing actions
@@ -259,62 +260,6 @@ function handleImageUpload(file) {
         showToast('Profile photo updated', 'success');
     };
     reader.readAsDataURL(file);
-}
-
-function saveProfileSettings(e) {
-    e.preventDefault();
-    
-    const formData = {
-        firstName: document.getElementById('firstName').value,
-        lastName: document.getElementById('lastName').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-        company: document.getElementById('company').value,
-        bio: document.getElementById('bio').value,
-        timezone: document.getElementById('timezone').value,
-        primaryLanguage: document.getElementById('primaryLanguage').value
-    };
-
-    // Simulate API call
-    showToast('Saving profile...', 'info');
-    
-    setTimeout(() => {
-        showToast('Profile settings saved successfully!', 'success');
-    }, 1500);
-}
-
-function changePassword(e) {
-    e.preventDefault();
-    
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-
-    if (newPassword !== confirmPassword) {
-        showToast('New passwords do not match', 'error');
-        return;
-    }
-
-    if (newPassword.length < 8) {
-        showToast('Password must be at least 8 characters long', 'error');
-        return;
-    }
-
-    // Simulate API call
-    showToast('Changing password...', 'info');
-    
-    setTimeout(() => {
-        showToast('Password changed successfully!', 'success');
-        document.getElementById('passwordForm').reset();
-    }, 2000);
-}
-
-function saveAllSettings() {
-    showToast('Saving all settings...', 'info');
-    
-    setTimeout(() => {
-        showToast('All settings saved successfully!', 'success');
-    }, 2000);
 }
 
 function resetAllSettings() {
@@ -529,11 +474,5 @@ document.addEventListener('keydown', function(e) {
 
     if (e.key === 'Escape') {
         document.getElementById('chatModal').style.display = 'none';
-    }
-
-    // Ctrl/Cmd + S to save settings
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        saveAllSettings();
     }
 });
